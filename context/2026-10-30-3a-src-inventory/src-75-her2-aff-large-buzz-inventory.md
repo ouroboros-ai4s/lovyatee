@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-75 HER2-aff-large / Buzz
+# [SRC-75 HER2-aff-large / Buzz](../2026-10-29-3a-src-readme/src-75-buzz-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R76_BUZZ\zenodo-10831512`, `data.zip` 内含 5 个不同研究的处理后数据.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-18 BioRad
+# [SRC-18 BioRad](../2026-10-29-3a-src-readme/src-18-biorad-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R18_BIORAD\snapshot-2024-12-20`, `BIORAD/data/` 5 张同构 curation CSV: 完整集 262 行 (`curation_pdbbind` / `curation_units` / `curation_different_heterodimers` 三表 ID 集合相同), 另有 238 与 236 行的两个过滤视图; 加 288 份冻结 RCSB entry FASTA.

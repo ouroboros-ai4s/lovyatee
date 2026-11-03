@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-27 Porebski 2023
+# [SRC-27 Porebski 2023](../2026-10-29-3a-src-readme/src-27-porebski-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R27_POREBSKI\snapshot-2023-11-14`, `porebski_et_al_2023_datasets/` 5 张 paired CSV: HEL 2 张 (FACS / MACS)、IL7 1 张、HER2 2 张 (affmat / ml_lib), 共 8,796,184 行.

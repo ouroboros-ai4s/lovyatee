@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-76 TDC AntibodyAff
+# [SRC-76 TDC AntibodyAff](../2026-10-29-3a-src-readme/src-76-tdc-antibodyaff-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R77_TDC_ANTIBODYAFF\dataverse-v105`, `protein_sabdab.csv` 493 行、6 列.

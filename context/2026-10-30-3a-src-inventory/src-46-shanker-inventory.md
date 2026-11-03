@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-46 Shanker 2024
+# [SRC-46 Shanker 2024](../2026-10-29-3a-src-readme/src-46-shanker-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R46_SHANKER\zenodo-11260318`, `FLAb/data/` 下 7 张结合表与 3 张多反应性表 (每行带完整 VH、VL 序列), 另加 `Shanker-supplementary-data/` 的 5 份补充数据与 19 个冻结 RCSB entry.

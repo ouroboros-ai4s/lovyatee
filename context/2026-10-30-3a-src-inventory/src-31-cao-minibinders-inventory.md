@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-31 Cao 2021
+# [SRC-31 Cao 2021](../2026-10-29-3a-src-readme/src-31-cao-minibinders-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R31_CAO_MINIBINDERS\snapshot-2021-10-09`, `supplemental_files/sorting_ngs_data/` 28 个设计库 (`sequences.list` 共 1,057,232 行, 1,056,925 条唯一序列) 与 `ngs_analysis/affinities/` 27 张 SC50 score 表 (997,343 行), 加 24 个冻结 RCSB entry.

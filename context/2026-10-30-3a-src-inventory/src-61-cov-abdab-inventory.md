@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-61 CoV-AbDab
+# [SRC-61 CoV-AbDab](../2026-10-29-3a-src-readme/src-61-cov-abdab-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R61_COV_ABDAB\snapshot-2024-02-08`, 单表 `CoV-AbDab/CoV-AbDab_080224.csv` (12,918 条记录, 23 列, 含 VH、VL、逐毒株结合与中和标记), 加 1,057 个冻结 RCSB entry.

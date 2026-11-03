@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-79 AlphaBind public experiments
+# [SRC-79 AlphaBind public experiments](../2026-10-29-3a-src-readme/src-79-alphabind-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R80_ALPHABIND\snapshot-2025-07-24`, `manuscript/data/alphaseq/` 8 张 AlphaSeq CSV (3 fine-tuning + 5 validation).

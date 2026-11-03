@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-35 Li 2023 AlphaSeq
+# [SRC-35 Li 2023 AlphaSeq](../2026-10-29-3a-src-readme/src-35-li-alphaseq-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R35_LI_ALPHASEQ\v2.0.0`, `AlphaSeq_Antibody_Dataset/mit-ll-AlphaSeq_Antibody_Dataset-a8f64a9/` 两张 CSV: `antibody_dataset_1` 1,259,700 行, `antibody_dataset_2` 1,903,921 行 (表头前有 6 行免责声明), 共 3,163,621 行.

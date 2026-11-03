@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-37 Jain 2024
+# [SRC-37 Jain 2024](../2026-10-29-3a-src-readme/src-37-jain-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R37_JAIN\snapshot-2026-08-17`, `FLAb/data/binding/` 2 张 CSV (`jain2024assessment_Hen_Lys_kd.csv` 31 行, `jain2024assessment_mouse_Ly_kd.csv` 2 行), 共 33 行; 另有作者补充工作簿 `articles/Jain_2024-07-31_mAbs-supplement-SM4152.xlsx`.

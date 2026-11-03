@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-59 BindCraft
+# [SRC-59 BindCraft](../2026-10-29-3a-src-readme/src-59-bindcraft-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R59_BINDCRAFT\snapshot-2025-08-27`, `BindCraft/BindCraft_2025-08-27_Nature-SupplementaryData1.csv` 212 个设计 (225 列, 含 5 次 MPNN 采样的逐次结构指标), 另有成对 TM-score / 序列一致性工作簿与 17 个冻结 RCSB entry.

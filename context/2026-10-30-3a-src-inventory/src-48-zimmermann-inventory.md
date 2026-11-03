@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-48 Zimmermann 2006
+# [SRC-48 Zimmermann 2006](../2026-10-29-3a-src-readme/src-48-zimmermann-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R48_ZIMMERMANN\snapshot-2026-08-17`, 唯一数据表 `FLAb/data/binding/zimmerman2020antibody_4420_kd.csv` 21 行 × 6 列; 另有 `pdb/` 下一份冻结的参考复合物 `1FLR`.

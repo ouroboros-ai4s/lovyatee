@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-64 COVIC-DB
+# [SRC-64 COVIC-DB](../2026-10-29-3a-src-readme/src-64-covic-db-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R64_COVIC_DB\snapshot-2026-09-19`, 14 个 XLSX, 每个都是 `Instructions` / `Dataset` / `Terminology` 三表; `Dataset` 合计 14,859 行, 覆盖 413 个 `Antibody label`.

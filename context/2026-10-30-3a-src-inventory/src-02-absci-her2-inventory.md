@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-02 Absci HER2
+# [SRC-02 Absci HER2](../2026-10-29-3a-src-readme/src-02-absci-her2-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R02_ABSCI_HER2\snapshot-2024-08-08`, `unlocking-de-novo-antibody-design/` 3 张 CSV: `spr-controls.csv` 1,855 行 × 5 列, `zero-shot-binders.csv` 422 行 × 7 列, `functionality-developability-cross_reactivity-data.csv` 13 行 × 48 列.

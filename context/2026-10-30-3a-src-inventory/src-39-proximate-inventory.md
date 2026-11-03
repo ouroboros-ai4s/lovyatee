@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-39 PROXiMATE
+# [SRC-39 PROXiMATE](../2026-10-29-3a-src-readme/src-39-proximate-readme.md)
 
 无法获取。PROXiMATE (PROtein-protein CompleX MutAtion ThErmodynamics) 由 IIT Madras 的 Gromiha 实验室维护, 对应文章 `PROXiMATE: a database of mutant protein-protein complex thermodynamics and kinetics`, Bioinformatics 2017, 33(17):2787。全库数据只发邮件申请, 站点没有批量文件。
 

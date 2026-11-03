@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-13 ANDD
+# [SRC-13 ANDD](../2026-10-29-3a-src-readme/src-13-andd-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R13_ANDD\snapshot-2026-01-05`, 单文件 `ANDD_v2.xlsx`, 48,800 行.

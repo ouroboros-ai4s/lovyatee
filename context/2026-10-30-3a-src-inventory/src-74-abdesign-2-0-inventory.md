@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-74 AbDesign 2.0
+# [SRC-74 AbDesign 2.0](../2026-10-29-3a-src-readme/src-74-abdesign2-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R75_ABDESIGN2\snapshot-2026-02-23`, `pd_1/affinity.csv` 576 行, 另有 5 张 developability 表.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-68 Phillips 2023
+# [SRC-68 Phillips 2023](../2026-10-29-3a-src-readme/src-68-ch65-comblib-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R69_CH65_COMBLIB\snapshot-2023-02-01`, 上游固定 commit `cea336d`, 主体是 `Kd_Inference/results_CH65/` 的基因型与拟合结果表; `QCfilt.csv` 65,536 个 genotype, `QCfilt_REPfilt.csv` 65,535 个, 另有三份 browser 表与三份 delta 派生表.

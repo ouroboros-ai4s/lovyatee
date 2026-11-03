@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-32 Vreven 2012
+# [SRC-32 Vreven 2012](../2026-10-29-3a-src-readme/src-32-vreven-affinity-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R32_VREVEN_AFFINITY\2.0`, affinity benchmark 2 张 TSV (`affinity_benchmark1` 144 行 + `affinity_benchmark2_additions` 35 行, 共 179 个复合物), 加 docking benchmark `Table_BM5.xlsx` 与 672 份冻结 RCSB entry FASTA.

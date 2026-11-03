@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-05 Tite-Seq
+# [SRC-05 Tite-Seq](../2026-10-29-3a-src-readme/src-05-titeseq-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R05_TITESEQ\snapshot-2017-09-24`, `16_titeseq/data/`: `replicate_1/2/3.csv` 3,679 / 3,680 / 3,680 行 × 110 列, `titration_curves.csv` 73 行 × 22 列, 另有 3 张模拟表.

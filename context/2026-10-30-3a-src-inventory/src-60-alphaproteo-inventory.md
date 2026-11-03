@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-60 AlphaProteo
+# [SRC-60 AlphaProteo](../2026-10-29-3a-src-readme/src-60-alphaproteo-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R60_ALPHAPROTEO\snapshot-2024-09-12`, 载荷是 arXiv v1 全文 HTML (`AlphaProteo_2024-09-12_arXiv-v1.html`, 内含 S1-S7 嵌入表) 与同版 PDF, 加 11 个冻结 RCSB entry.

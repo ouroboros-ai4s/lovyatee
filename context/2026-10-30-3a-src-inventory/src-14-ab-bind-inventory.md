@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-14 AB-Bind
+# [SRC-14 AB-Bind](../2026-10-29-3a-src-readme/src-14-abbind-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R14_ABBIND\snapshot-2019-04-10`, 单表 `AB-Bind_experimental_data.csv`, 1,101 行、32 个复合物 (含 4 个 `HM_` 同源复合物).

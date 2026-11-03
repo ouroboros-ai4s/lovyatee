@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-66 KyDab
+# [SRC-66 KyDab](../2026-10-29-3a-src-readme/src-66-kydab-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R66_KYDAB\snapshot-2026-03-23`, 11 个研究 ZIP 解到快照内的 `extracted/<study>/` 后使用, 原始 ZIP 未改. 每项研究的主配对表合计 123,527 行, 与源 README 的 productive 配对数一致; `*.annotated.csv` 是同一批行的氨基酸与 V/J 注释, AIRR 链表是逐链视图, FASTA 是序列副本, 都不另计记录.

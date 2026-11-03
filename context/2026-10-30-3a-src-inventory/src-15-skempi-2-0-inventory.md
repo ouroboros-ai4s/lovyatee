@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-15 SKEMPI 2.0
+# [SRC-15 SKEMPI 2.0](../2026-10-29-3a-src-readme/src-15-skempi2-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R15_SKEMPI2\2.0`, 单表 `skempi_v2.csv` (分号分隔), 7,085 行、349 个复合物 (345 个 PDB).

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-54 AIntibody
+# [SRC-54 AIntibody](../2026-10-29-3a-src-readme/src-54-aintibody-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R54_AINTIBODY\snapshot-2026-08-19`, 两个工作簿: `MOESM4` 的 Dataset 1 / 2 / 3 分别 185,097 / 32,059 / 715 行, 共 217,871 行; `MOESM3` 是 5 张组织级排名汇总表, 不计入本表.

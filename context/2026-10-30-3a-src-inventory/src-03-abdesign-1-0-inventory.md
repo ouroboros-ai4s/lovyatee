@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-03 AbDesign 1.0
+# [SRC-03 AbDesign 1.0](../2026-10-29-3a-src-readme/src-03-abdesign-db-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R03_ABDESIGN_DB\snapshot-2025-08-26`, `AbDesign/datasets_wt.csv` 57 行 × 25 列 (WT 亲本) + `AbDesign/datasets_mut.csv` 1,303 行 × 38 列 (单点突变体), 共 1,360 行.

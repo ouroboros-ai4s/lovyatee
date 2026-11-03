@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-50 Graphinity
+# [SRC-50 Graphinity](../2026-10-29-3a-src-readme/src-50-graphinity-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R50_GRAPHINITY\v1`, 4 张表: AB-Bind 645, SKEMPI 608, FoldX 942,723, Flex 20,829.

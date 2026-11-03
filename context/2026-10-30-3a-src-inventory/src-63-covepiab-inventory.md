@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-63 CovEpiAb
+# [SRC-63 CovEpiAb](../2026-10-29-3a-src-readme/src-63-covepiab-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R63_COVEPIAB\snapshot-2023-11-07`, 只有论文补充工作簿 `CovEpiAb_2024-04-23_BriefingsInBioinformatics-SupplementaryTables.xlsx` (Table S1–S5) 与 `pdb/` 下 828 个 RCSB entry; 抗体结果页 (12,604 行) 不在本快照内.

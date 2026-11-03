@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-06 Koenig 2017
+# [SRC-06 Koenig 2017](../2026-10-29-3a-src-readme/src-06-koenig-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R06_KOENIG\snapshot-2026-08-17`, `FLAb/data/binding/koenig2017mutational_kd_g6.csv` 4,275 行 × 7 列 + `FLAb/data/expression/koenig2017mutational_er_g6.csv` 4,275 行 × 4 列, 共 8,550 行.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-49 Garbinski 2023
+# [SRC-49 Garbinski 2023](../2026-10-29-3a-src-readme/src-49-garbinski-gsk-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R49_GARBINSKI_GSK\snapshot-2026-08-17`, `FLAb/data/` 三张表: `binding/garbinski2023_kd.csv` 81 行, `expression/garbinski2023_exp.csv` 94 行, `thermostability/garbinski2023_tm1.csv` 86 行, 共 261 行; 另有 `pdb/` 下三份冻结参考复合物.

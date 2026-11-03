@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-69 CR9114 DMS
+# [SRC-69 CR9114 DMS](../2026-10-29-3a-src-readme/src-69-cr9114-dms-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R70_CR9114_DMS\v1.0.0`, 一个 CR9114 重链点突变库 (germline 与成熟亲本各一套)、一个 168 行 IGHV1-69 抗体面板、40 行 BLI 复核、18 行 MIC 与 342 行热稳定性表.

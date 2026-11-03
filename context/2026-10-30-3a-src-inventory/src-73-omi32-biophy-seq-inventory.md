@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-73 Tharp 2026
+# [SRC-73 Tharp 2026](../2026-10-29-3a-src-readme/src-73-omi32-biophy-seq-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R74_OMI32_BIOPHY_SEQ\snapshot-2026-05-30`, 对象是 Omi32 谱系 13 个二元位点的组合库 (`2^13 = 8,192` 个设计), 在 HEK 细胞表面以全长 IgG 形式展示.

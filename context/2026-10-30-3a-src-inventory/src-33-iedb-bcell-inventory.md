@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-33 IEDB B-cell
+# [SRC-33 IEDB B-cell](../2026-10-29-3a-src-readme/src-33-iedb-bcell-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R33_IEDB_BCELL\snapshot-2026-09-13`, 三张 CSV 直接从 ZIP 内读出, 不解包: `bcell_full_v3.csv` (1,692,185 行, 131 列), `bcr_full_v3.csv` (10,461 行, 74 列), `bcr_3d_assays.csv` (5,947 行, 48 列), 加 5,515 个冻结 RCSB entry.

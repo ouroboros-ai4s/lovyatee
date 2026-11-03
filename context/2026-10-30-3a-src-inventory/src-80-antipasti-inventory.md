@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-80 ANTIPASTI
+# [SRC-80 ANTIPASTI](../2026-10-29-3a-src-readme/src-80-antipasti-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R81_ANTIPASTI\v1`, `ANTIPASTI/data/sabdab_summary_all.tsv` 1,266 行、30 列, 本地 mendeley 结构 2,268 个 PDB 文件.

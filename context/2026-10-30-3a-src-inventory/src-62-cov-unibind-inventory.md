@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-62 CoVUniBind
+# [SRC-62 CoVUniBind](../2026-10-29-3a-src-readme/src-62-cov-unibind-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R62_COV_UNIBIND\snapshot-2025-12-02`, `CoVUniBind/data/` 6 张测量表 (75,459 行), `scores/` 下同名 6 张带结构 / 语言模型打分的副本, `antibody_info/` 183 行抗体别名与 CDR, 加 920 个冻结 RCSB entry.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-51 MaveDB
+# [SRC-51 MaveDB](../2026-10-29-3a-src-readme/src-51-mavedb-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R51_MAVEDB\snapshot-2026-06-23`, `MaveDB/` 下 5 个 score set 共 588,717 行, 另有 `pdb/` 下 5 份冻结参考复合物.

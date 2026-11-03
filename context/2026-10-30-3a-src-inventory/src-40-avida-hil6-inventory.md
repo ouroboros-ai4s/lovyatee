@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-40 AVIDa-hIL6
+# [SRC-40 AVIDa-hIL6](../2026-10-29-3a-src-readme/src-40-avida-hil6-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R40_AVIDA_HIL6\1.0.0`, `AVIDa-hIL6-Zenodo/il6_aai_dataset.csv` 573,891 行 × 4 列 (`VHH_sequence`, `label`, `Ag_label`, `Ag_sequence`).

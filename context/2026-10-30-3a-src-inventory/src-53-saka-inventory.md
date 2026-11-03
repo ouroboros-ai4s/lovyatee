@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-53 Saka 2021
+# [SRC-53 Saka 2021](../2026-10-29-3a-src-readme/src-53-saka-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R53_SAKA\snapshot-2021-03-12`, 论文正式版加三张主文表页; 逐行测量只在 `Saka/Table-3.html`, 21 行 (10 ML + 10 Freq + 1 Control).

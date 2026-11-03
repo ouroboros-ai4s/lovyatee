@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-01 IgDesign
+# [SRC-01 IgDesign](../2026-10-29-3a-src-readme/src-01-igdesign-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R01_IGDESIGN\snapshot-2025-01-10`, `igdesign/data/` 8 张同构 CSV (7 张未盲化 + `Blinded/Ravagalimab-CD40.csv`), 共 1,444 行 × 47 列.

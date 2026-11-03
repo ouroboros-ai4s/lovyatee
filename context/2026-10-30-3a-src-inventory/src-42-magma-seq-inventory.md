@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-42 MAGMA-seq
+# [SRC-42 MAGMA-seq](../2026-10-29-3a-src-readme/src-42-magma-seq-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R42_MAGMA_SEQ\snapshot-2024-06-10`, 结果表为 `articles/MAGMAseq_2024-05-10_NatureCommunications-v1-supplement6.xlsx` (Supplementary Data 4) 的 5 个结果 sheet, 共 4,052 行; 另有 Data 1 (质粒/文库/引物) 与 Source Data `supplement9.xlsx`.

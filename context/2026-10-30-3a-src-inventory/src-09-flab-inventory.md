@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-09 FLAb
+# [SRC-09 FLAb](../2026-10-29-3a-src-readme/src-09-flab-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R09_FLAB\snapshot-2026-08-17`, 165 张表、30 个 study.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-70 CGG naive lineage
+# [SRC-70 CGG naive lineage](../2026-10-29-3a-src-readme/src-70-cggnaive-dms-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R71_CGGNAIVE_DMS\snapshot-2025-02-03`, 两个文库 (lib1 / lib2) 的 Tite-Seq 变体表、逐位置突变汇总表、条码调用表, 以及 `paper-linked/` 下一份 27 列的评分表.

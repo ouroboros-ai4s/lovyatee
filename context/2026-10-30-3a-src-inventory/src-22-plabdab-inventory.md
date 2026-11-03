@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-22 PLAbDab
+# [SRC-22 PLAbDab](../2026-10-29-3a-src-readme/src-22-plabdab-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R22_PLABDAB\snapshot-2024-08-28`, `PLAbDab/paired_sequences.csv.gz` 176,894 行 × 15 列, `unpaired_sequences.csv.gz` 673,959 行 × 17 列, `plabdab_data.tar.gz` 79,125 个成员, 加 6,827 个 RCSB entry 的 FASTA 与完整 mmCIF.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-72 Moulana 2026
+# [SRC-72 Moulana 2026](../2026-10-29-3a-src-readme/src-72-background-dependence-sars-cov2-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R73_BACKGROUND_DEPENDENCE_SARS_COV2\snapshot-2026-02-13`, `File_Details.csv` 索引的 51 张表型表全部落地, 合计 4,795,558 行, 分属 B / C / M 三个 RBD 组合突变文库.

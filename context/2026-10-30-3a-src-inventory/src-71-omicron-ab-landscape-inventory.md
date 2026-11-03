@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-71 Omicron BA.1
+# [SRC-71 Omicron BA.1](../2026-10-29-3a-src-readme/src-71-omicron-ab-landscape-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R72_OMICRON_AB_LANDSCAPE\snapshot-2023-11-10`, 研究对象是抗原侧: 15 个 Omicron BA.1 替换的 `2^15 = 32,768` 个全组合, 对四株固定抗体与 ACE2 受体各测一张亲和力表.

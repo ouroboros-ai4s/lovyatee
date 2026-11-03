@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-11 AbBiBench
+# [SRC-11 AbBiBench](../2026-10-29-3a-src-readme/src-11-abbibench-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R11_ABBIBENCH\snapshot-2026-05-02`, 含 17 张 binding-affinity CSV, 215,699 行.

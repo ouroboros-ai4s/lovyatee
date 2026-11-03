@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-21 AVIDbase
+# [SRC-21 AVIDbase](../2026-10-29-3a-src-readme/src-21-avidbase-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R21_AVIDBASE\snapshot-2026-07-29`, `AVIDbase/AVIDbase.xlsx` 4 个 sheet (均 52 列): `AVIDbase-nr` 690 行, `AVIDbase-prot` 591 行, `AVIDbase-low` 99 行, `AVIDbase-r` 1,048 行; 另有 `annotation_input_table_MANUAL.xlsx` 1,909 行人工注释输入.

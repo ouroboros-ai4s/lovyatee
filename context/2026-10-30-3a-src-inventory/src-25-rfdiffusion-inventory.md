@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-25 RFdiffusion
+# [SRC-25 RFdiffusion](../2026-10-29-3a-src-readme/src-25-rfdiffusion-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R25_RFDIFFUSION\snapshot-2025-06-25`, `rfdiffusion/AntibodyTrainingDataset.csv` 11,777 行 × 40 列, 加本地冻结的 6,209 个 RCSB entry FASTA (提供真实链序列).

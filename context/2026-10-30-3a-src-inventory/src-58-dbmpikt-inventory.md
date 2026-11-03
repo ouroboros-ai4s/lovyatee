@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-58 dbMPIKT
+# [SRC-58 dbMPIKT](../2026-10-29-3a-src-readme/src-58-dbmpikt-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R58_DBMPIKT\snapshot-2018-11-27`, 主表 `dbMPIKT/dbMPIKT_2018-11-27_BMC-AdditionalFile1.xlsx` (124 条记录, 1,123 个突变条目), 另有复合物-链表 (241 个复合物) 与论文的汇总表, 加 229 份冻结 RCSB entry FASTA.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-20 SAbDab / SAbDab2
+# [SRC-20 SAbDab / SAbDab2](../2026-10-29-3a-src-readme/src-20-sabdab-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R20_SABDAB\snapshot-2026-09-11`, `SAbDab2/sabdab2_summary.csv` 22,264 个结构实例, 34,813 个结构文件 (cif.gz + fasta).

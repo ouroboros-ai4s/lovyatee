@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-24 SEPIA
+# [SRC-24 SEPIA](../2026-10-29-3a-src-readme/src-24-sepia-readme.md)
 
 无法获取。SEPIA 由 A-Alpha Bio 生成, 对应预印本 `The Synthetic Epitope Atlas: High-Throughput Design and Validation of De Novo Antibody-Antigen Complexes`, bioRxiv doi `10.64898/2026.04.17.719295`, v2 于 2026-04-19 发布。数据没有随论文开放。
 

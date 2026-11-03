@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-26 Adaptyv EGFR
+# [SRC-26 Adaptyv EGFR](../2026-10-29-3a-src-readme/src-26-adaptyv-egfr-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R26_ADAPTYV_EGFR\snapshot-2025-03-18`, 两个固定 GitHub commit 的 `results/` 汇总表 (Round 1 `result_summary.csv` 202 行 / `replicate_summary.csv` 461 行, Round 2 402 / 953 行), 加 2 个 RCSB entry (`1IVO`、`1YY9`).

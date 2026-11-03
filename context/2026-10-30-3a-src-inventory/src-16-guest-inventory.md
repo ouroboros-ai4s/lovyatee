@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-16 Guest antibody benchmark
+# [SRC-16 Guest antibody benchmark](../2026-10-29-3a-src-readme/src-16-guest-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R16_GUEST\snapshot-2020-11-17`, 67 个 docking case、42 条亲和力记录.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-28 Mason
+# [SRC-28 Mason](../2026-10-29-3a-src-readme/src-28-mason-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R28_MASON\snapshot-2020-09-02`, `DMS_opt` Git 包内 `data/` 的 20 张 MiXCR 表 (`mHER_H3_` 15 张, `mHER_L3_` 5 张, 共 95,141 行) 与 2 张派生标签 CSV (`mHER_H3_AgNeg.csv` 27,539 行, `mHER_H3_AgPos.csv` 11,300 行), 加 1 个 RCSB entry (`1N8Z`).

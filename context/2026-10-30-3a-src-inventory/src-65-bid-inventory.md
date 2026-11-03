@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-65 BID
+# [SRC-65 BID](../2026-10-29-3a-src-readme/src-65-bid-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R65_BID\snapshot-2009-10-30`, 载荷主体是 2009 年 BMC Bioinformatics 论文的 Additional file 4 (OLE Word 97–2003 `.doc`), 内含 Table S7 (9 个复合物) 与 Data set S2 (41 条丙氨酸突变), 加 9 个冻结 RCSB entry (`1ES7`、`1FAK`、`1FE8`、`1FOE`、`1GL4`、`1MQ8`、`1NFI`、`1NUN`、`1UB4`).

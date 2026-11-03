@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-56 ASEdb
+# [SRC-56 ASEdb](../2026-10-29-3a-src-readme/src-56-asedb-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R56_ASEDB\snapshot-2010-07-21`, 主载荷 `ASEdb/ASEdb_2010-07-21_Wayback-MySQLDump.mysql` 三个表 (mutation 3,043 行 / system 101 行 / reference 74 行), 加 32 个冻结 RCSB entry 的 FASTA 与 mmCIF.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-52 ProtaBank
+# [SRC-52 ProtaBank](../2026-10-29-3a-src-readme/src-52-protabank-readme.md)
 
 无法获取。ProtaBank 是 Protabit LLC 维护的蛋白设计数据仓库, 对应文章 `ProtaBank: A repository for protein design and engineering data`, Protein Science 2018, doi `10.1002/pro.3585`。没有全库导出。
 

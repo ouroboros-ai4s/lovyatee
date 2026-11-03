@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-17 PDBbind-PP
+# [SRC-17 PDBbind-PP](../2026-10-29-3a-src-readme/src-17-pdbbind-pp-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R17_PDBBIND_PP\2020`, 主表 `PDBbind_v2020/PP/index/INDEX_general_PP.2020` 2,852 条记录 (定宽文本, 非分隔表), 加 2,852 件 `.ent.pdb` 与 2,852 份 RCSB entry FASTA.

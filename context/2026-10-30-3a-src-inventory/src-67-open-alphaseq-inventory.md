@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-67 Open AlphaSeq
+# [SRC-67 Open AlphaSeq](../2026-10-29-3a-src-readme/src-67-open-alphaseq-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R67_OPEN_ALPHASEQ\snapshot-2025-12-04`, 九张 `open-alphaseq/data/<实验>/data.parquet`, 各表 10 列同构, 合计 1,705,908 行, 无完全重复行; 每行是一个 MATa 构建体与一个 MATα 构建体的配对.

@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-08 AVIDa-hTNFa
+# [SRC-08 AVIDa-hTNFa](../2026-10-29-3a-src-readme/src-08-avida-htnfa-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R08_AVIDA_HTNFA\snapshot-2025-06-26`, `AVIDa-hTNFa.csv` 5,580 行 + `corpus-hTNFa.csv` 216,225 行无标签语料.

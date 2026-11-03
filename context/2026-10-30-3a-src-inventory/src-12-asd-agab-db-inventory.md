@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-12 ASD / AgAb DB
+# [SRC-12 ASD / AgAb DB](../2026-10-29-3a-src-readme/src-12-asd-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R12_ASD\2.0`, 共 20 个 parquet (delta 表), 1,177,819 条记录.

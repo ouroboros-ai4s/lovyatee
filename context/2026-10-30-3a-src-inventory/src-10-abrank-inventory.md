@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-10 AbRank
+# [SRC-10 AbRank](../2026-10-29-3a-src-readme/src-10-abrank-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R10_ABRANK\snapshot-2025-07-08`, 单表 `AbRank_dataset.csv` (TSV), 342,356 行.

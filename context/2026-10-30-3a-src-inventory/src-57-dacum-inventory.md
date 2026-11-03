@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-57 DACUM
+# [SRC-57 DACUM](../2026-10-29-3a-src-readme/src-57-dacum-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R57_DACUM\snapshot-2019-03-08`, 主表 `DACUM/DACUM_1.1.csv` (分号分隔, 1,872 行、147 个复合物), 同目录 `DACUM_1.0.csv` 是同一批突变的 6 列原始版, 加 147 份 RCSB entry FASTA.

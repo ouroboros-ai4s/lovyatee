@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-43 Phillips 2021
+# [SRC-43 Phillips 2021](../2026-10-29-3a-src-readme/src-43-phillips-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R43_PHILLIPS\snapshot-2021-09-22`, 出版方 v3 Figure 1 source data 两张定量表, 加上游完整 git tree (`bnab-landscapes/`, 3,862 个文件) 与 3 个冻结 RCSB entry.

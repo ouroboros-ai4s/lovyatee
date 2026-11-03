@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-45 Ab-CoV
+# [SRC-45 Ab-CoV](../2026-10-29-3a-src-readme/src-45-abcov-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R45_ABCOV\figshare-5661658-v1`, 主体是 `Ab-CoV-Figshare/CoV-AbDab_220222.csv` (5,033 条抗体 / 纳米抗体记录, 带 VH、VL、结合与中和标记), 同目录另有 epitope、界面残基、计算突变网格与病毒蛋白表, 加 `FLAb/data/binding/` 的 rawat2022abcov Kd / IC50 两张表与 214 个冻结 RCSB entry.

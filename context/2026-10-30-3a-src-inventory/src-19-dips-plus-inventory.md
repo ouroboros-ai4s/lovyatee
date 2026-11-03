@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-19 DIPS-Plus
+# [SRC-19 DIPS-Plus](../2026-10-29-3a-src-readme/src-19-dips-plus-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R19_DIPS_PLUS\1.1.0`, `DIPS_PLUS/final_raw_dips.tar.gz` 42,112 个最终 Pair 成员 + 4 个列表/统计成员, `DIPS_PLUS/final_raw_db5.tar.gz` 230 个 Pair 成员 + 5 个成员, 加 12,601 份 RCSB entry FASTA.

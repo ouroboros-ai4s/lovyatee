@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-29 RESP
+# [SRC-29 RESP](../2026-10-29-3a-src-readme/src-29-resp-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R29_RESP\snapshot-2025-06-27`, 三个压缩包各解一次到快照内的 `extracted/`: `RESP-v0.0.1.zip` (153 个成员), Source Data `supplement-3.zip` (9 个工作簿), 以及 `RESP_data.zip` 内 `encoded_data.tar.gz` 的 13 个序列与标签成员 (1.9 GB 的 `.pt` 张量与 `.npy` 是模型输入, 不读出). 加 2 个冻结 RCSB entry.

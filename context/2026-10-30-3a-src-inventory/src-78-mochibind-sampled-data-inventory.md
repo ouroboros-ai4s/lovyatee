@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-78 MochiBind sampled data
+# [SRC-78 MochiBind sampled data](../2026-10-29-3a-src-readme/src-78-mochibind-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R79_MOCHIBIND\snapshot-2026-05-19`, `ab-binding-eval/data/` 7 张 AlphaSeq 采样 CSV, 共 33,454 行.

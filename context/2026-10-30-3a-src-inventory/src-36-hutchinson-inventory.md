@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-36 Hutchinson 2024
+# [SRC-36 Hutchinson 2024](../2026-10-29-3a-src-readme/src-36-hutchinson-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R36_HUTCHINSON\snapshot-2026-08-17`, FLAb 12 张 CSV: `binding/` 8 张 (4 Fab + 4 IgG, 362 行) + `thermostability/` 4 张 (Tm1, 258 行), 共 620 行; 另有作者补充工作簿 `articles/Hutchinson_2024-06-20_mAbs-supplement-SM3514.xlsx`.

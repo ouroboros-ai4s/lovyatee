@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-41 AVIDa-SARS-CoV-2
+# [SRC-41 AVIDa-SARS-CoV-2](../2026-10-29-3a-src-readme/src-41-avida-sars-cov2-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R41_AVIDA_SARS_COV2\snapshot-2024-10-17`, `AVIDa-SARS-CoV-2/` 4 张 CSV: `AVIDa-SARS-CoV-2.csv` 77,003 行 × 6 列, `antigen_sequences.csv` 17 行, `train.csv` 49,685 行与 `test.csv` 27,318 行 (按动物划分, 并集等于总表).

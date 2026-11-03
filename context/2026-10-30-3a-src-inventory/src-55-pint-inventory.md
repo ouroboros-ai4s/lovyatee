@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-55 PINT
+# [SRC-55 PINT](../2026-10-29-3a-src-readme/src-55-pint-readme.md)
 
 无法获取。PINT (Protein-protein Interactions Thermodynamic Database) 由 Kumar 与 Gromiha 建立, 对应文章 `PINT: Protein–protein Interactions Thermodynamic Database`, Nucleic Acids Research 2006, 34:D195-D198, doi `10.1093/nar/gkj017`。数据库站点已下线, 没有存档镜像, 也没有随论文发布数据包。
 

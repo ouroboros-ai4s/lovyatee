@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-07 Makowski 2022
+# [SRC-07 Makowski 2022](../2026-10-29-3a-src-readme/src-07-makowski-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R07_MAKOWSKI\snapshot-2022-06-24`, `Emi_Pareto_Opt_ML/`: `emi_binding.csv` 4,000 行, `iso_binding.csv` 126 行, `igg_binding.csv` 96 行, 共 4,222 行; 另有 `*_reps.csv` (64 维 UniRep 特征) 与热图汇总表.

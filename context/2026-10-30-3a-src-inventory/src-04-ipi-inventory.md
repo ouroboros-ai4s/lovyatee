@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-04 IPI
+# [SRC-04 IPI](../2026-10-29-3a-src-readme/src-04-ipi-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R04_IPI\zenodo-15707494`, 5 层表: `00Library_Biophysics_486Abs(1).csv` 486 行, 22 张选择汇总 CSV 94,274 行, 4 张 `*_Test1_Lib31.csv` 383,341 行, 与 `FLAb/data/binding/` 20 张按 assay 重切的派生 CSV 709 行, 共 478,810 行.

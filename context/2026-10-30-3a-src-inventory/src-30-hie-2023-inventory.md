@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-30 HIE 2023
+# [SRC-30 HIE 2023](../2026-10-29-3a-src-readme/src-30-hie-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R30_HIE\snapshot-2022-08-05`, `articles/` 下 supplementary data 3-8, 加 6 个冻结 RCSB entry. 统计主体是 supplementary data 3 的 14 张 sheet: 22 个设计变体块、9 个浓度序列块、1 个抗原 panel 块.

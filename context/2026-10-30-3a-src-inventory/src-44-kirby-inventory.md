@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-44 Kirby 2025
+# [SRC-44 Kirby 2025](../2026-10-29-3a-src-readme/src-44-kirby-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R44_KIRBY\snapshot-2024-06-21`, 出版方 dataset1 一张工作簿 (25 张表: 两个酵母展示库的 barcode counts 与最大似然拟合、两个打分库、Figure 4A 等温滴定), dataset2 只有克隆寡核苷酸与引物, 加 6 个冻结 RCSB entry.

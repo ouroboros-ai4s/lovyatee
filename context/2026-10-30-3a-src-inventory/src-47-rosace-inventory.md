@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-47 ROSACE 2023
+# [SRC-47 ROSACE 2023](../2026-10-29-3a-src-readme/src-47-rosace-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R47_ROSACE\snapshot-2023-04-06`, `FLAb/data/` 下 2 张结合表、6 张多反应性表、2 张热稳定性表, 加 `Rosace-source-data/` 两份补充工作簿与 114 个冻结 RCSB entry.

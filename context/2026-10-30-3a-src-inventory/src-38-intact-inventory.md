@@ -3,7 +3,7 @@ tags:
   - context
 ---
 
-# SRC-38 IntAct
+# [SRC-38 IntAct](../2026-10-29-3a-src-readme/src-38-intact-readme.md)
 
 > 每条 data 统一建模为 `((ab, ag), label, assay, condition, replicate, source)`.
 > 本地快照 `G:\abag-datasets\SRC_R38_INTACT\snapshot-2026-01-14`, `IntAct/psimitab/intact.zip` 的两个成员 (`intact.txt` 1,787,425 行, `intact_negative.txt` 983 行) 共 1,788,408 行 × 42 列 MITAB27, 加 2 个冻结 RCSB entry (`3VI3`、`3VI4`).
