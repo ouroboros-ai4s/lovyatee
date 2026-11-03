@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 61
+- tags:
+  - context
 ---
 
 # Epitope Diversity Needs A Stability Profile

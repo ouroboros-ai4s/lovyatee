@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 58
+- tags:
+  - context
 ---
 
 # Richness Bounds Do Not Transfer To Coverage

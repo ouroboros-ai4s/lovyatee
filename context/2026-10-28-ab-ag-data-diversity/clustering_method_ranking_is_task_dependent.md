@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 63
+- tags:
+  - context
 ---
 
 # Clustering Method Ranking Is Task Dependent

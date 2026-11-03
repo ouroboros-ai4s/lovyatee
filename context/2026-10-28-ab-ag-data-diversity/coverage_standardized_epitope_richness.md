@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 49
+- tags:
+  - context
 ---
 
 # Coverage Standardized Epitope Richness

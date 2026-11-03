@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 64
+- tags:
+  - context
 ---
 
 # Canonical Class Criterion Has Two Readings

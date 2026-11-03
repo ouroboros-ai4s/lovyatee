@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 60
+- tags:
+  - context
 ---
 
 # Epitope Diversity Is A Joint Antigen Immune Background Property

@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 60
+- tags:
+  - context
 ---
 
 # Fixed Coverage Enables Guaranteed Representative Selection

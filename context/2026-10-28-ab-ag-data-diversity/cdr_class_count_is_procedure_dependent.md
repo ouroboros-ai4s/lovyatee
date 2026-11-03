@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 50
+- tags:
+  - context
 ---
 
 # CDR Class Count Is Procedure Dependent

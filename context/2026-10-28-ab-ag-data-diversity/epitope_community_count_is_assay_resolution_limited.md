@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 65
+- tags:
+  - context
 ---
 
 # Epitope Community Count Is Assay Resolution Limited

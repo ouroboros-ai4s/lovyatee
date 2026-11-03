@@ -1,7 +1,6 @@
 ---
-tags:
-  - 2026-10-20-diversity-literature-survey
-qc: 63
+- tags:
+  - context
 ---
 
 # LM Representations Compress Off Germline Variation
