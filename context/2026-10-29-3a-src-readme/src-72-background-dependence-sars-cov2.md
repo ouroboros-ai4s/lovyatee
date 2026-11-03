@@ -1,3 +1,8 @@
+---
+- tags:
+  - context
+---
+
 # SRC_R72_BACKGROUND_DEPENDENCE_SARS_COV2 数据说明
 
 - [数据集身份](#数据集身份)

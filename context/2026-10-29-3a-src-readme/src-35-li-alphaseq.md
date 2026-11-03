@@ -1,9 +1,14 @@
+---
+- tags:
+  - context
+---
+
 # AlphaSeq Antibody Datasets
 
 To support protein representation learning, we published two datasets containing
 quantitative binding scores of scFv-format antibodies against a SARS-CoV-2
 target peptide collected via an AlphaSeq assay. Each dataset, associated license and descriptions are included in each
-subdirectory. 
+subdirectory.
 
 - antibody_dataset_1: Contains the initial AlphaSeq Antibody Dataset. Please
   refer to our [Data Descriptor
