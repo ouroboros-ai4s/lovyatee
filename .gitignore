@@ -1,0 +1,27 @@
+# Agents
+.agents/
+.claude/
+.codex/
+skills/
+.mcp.json
+SESSIONS.md
+PROMPTS.md
+CLAUDE.md
+CODEX.md
+AGENTS.md
+TODO.md
+HANDOFF.md
+
+# Obsidian
+.obsidian/
+assets/obsidian-color-groups.md
+
+# Env
+.env
+
+# Local scratch
+tmp/
+
+# Python
+__pycache__/
+*.pyc
