@@ -218,9 +218,9 @@ pair       record_key, AB_ID, AG_ID, 3A_ID, obs[]                     (assemble 
 | 磁盘 | 根分区已满，只剩 3.7 GB，`~` 在根分区上。工作区、临时文件和各类缓存（`TMPDIR`、`UV_CACHE_DIR`、`XDG_CACHE_HOME`）全部放在 `/data_new/ywy/`，该盘剩 1.8 TB |
 | 权限 | 无 sudo。系统包用 `apt-get download` 加 `dpkg -x` 解到用户目录，HMMER 即此法安装在 `/data_new/ywy/tools/hmmer/usr/bin` |
 | 数据 | `/data_new/ywy/dataset-abag/SRC_Rxx_*`；仓库在 host 上位于 `/data_new/ywy/LOVYATEE/`，`etl/` 在其根目录下 |
-| 网络 | 直连可达：PyPI 清华镜像、`archive.ubuntu.com`、`rcsb.org`。直连不通：`github.com`、`pypi.org`、`huggingface.co`、`files.rcsb.org`、`www.ebi.ac.uk`，这些经 mihomo 代理可达 |
+| 网络 | 直连可达：PyPI 清华镜像、`archive.ubuntu.com`、`rcsb.org`。直连不通：`github.com`、`pypi.org`、`huggingface.co`、`files.rcsb.org`、`www.ebi.ac.uk`，这些只能经 mihomo 代理，已逐个测通，`files.rcsb.org` 下载 `1N8Z.cif` 约 1 秒。DNS 只有 `1.1.1.1` 能用，`8.8.8.8` 和国内公共 DNS 的 UDP 53 都超时 |
 
-mihomo v1.19.33 装在 `/data_new/ywy/tools/mihomo/`，监听 `127.0.0.1:17890`（http 与 socks 混合端口），控制接口在 `127.0.0.1:19090`，策略组 `PROXY` 为 url-test，节点来自用户的订阅。订阅链接只存在于 host 上权限为 600 的 `config.yaml`，不入库。需要外网的命令显式带 `https_proxy=http://127.0.0.1:17890`，其余流量不经代理。订阅里 24 个节点实测只有 4 个存活，其余是占位或失效节点，存活情况会变化；下载失败时先查 `PROXY` 组当前选中的节点。进程以 `setsid nohup` 启动，主机重启后需要重新启动。
+mihomo v1.19.33 装在 `/data_new/ywy/tools/mihomo/`，监听 `127.0.0.1:17890`（http 与 socks 混合端口），控制接口在 `127.0.0.1:19090`，策略组 `PROXY` 为 url-test，节点来自用户的订阅，共 65 个，实测 32 个存活。订阅链接只存在于 host 上权限为 600 的 `config.yaml`，不入库。需要外网的命令显式带 `https_proxy=http://127.0.0.1:17890`，其余流量不经代理。mihomo 的 DNS 固定为 `1.1.1.1`。mihomo 必须带 `GODEBUG=tlsmlkem=0` 启动：Go 默认的 ML-KEM 密钥交换会让 TLS ClientHello 变大，在这个网络上握手超时，订阅拉取失败。启动命令为 `GODEBUG=tlsmlkem=0 setsid nohup ./mihomo -d . -f config.yaml`，主机重启后需要重新启动。下载失败时先查 `PROXY` 组当前选中的节点和存活数。
 
 到 host 的 SSH 经本机端口转发，偶发断开。长任务用 `setsid nohup` 启动并把日志写入文件，断线不中断运行。
 
@@ -231,12 +231,12 @@ mihomo v1.19.33 装在 `/data_new/ywy/tools/mihomo/`，监听 `127.0.0.1:17890`�
 | 流水线引擎 | Daft 0.7.26 | 各 SRC 的阶段：读取、distinct、批量 UDF（调用 ANARCI、gemmi）、join 回 record、写 Parquet |
 | 查询与 merge | DuckDB 2.0.0 | 直接对 Parquet 写 SQL：全局 merge 的分组追加、对账、`stats`、`qa_sample` |
 | 存储格式 | pyarrow 25.0.1，Parquet | schema 用 pyarrow 声明 |
-| 结构解析 | gemmi 0.7.5 | `structref` 解析 PDB 与 mmCIF |
+| 结构解析 | gemmi 0.7.5 | `structref` 解析 PDB 与 mmCIF。已在 R14 的 `3BDY.pdb` 上验证：entity 全长序列（H 链 230）与已观察残基（216）可分别取得，覆盖检查可行。RCSB 的 `1N8Z.cif` 同样验证：轻链 214、重链 220，HER2 的 entity 全长 607，已观察 581 |
 | 可变域编号 | ANARCI 2026.2.13.2 与 HMMER 3.4 | `vdomain` |
 | 环境 | uv 0.13.7，venv 在 `/data_new/ywy/envs/etl` | 版本记录在 `etl/` 的依赖文件中 |
 | 测试 | pytest | 模块自检 |
 
-Daft 与 DuckDB 读写同一份 Parquet，分工按场景而不是按阶段，两者都能做的事 cc 任选其一。
+Daft 与 DuckDB 读写同一份 Parquet，分工按场景而不是按阶段，两者都能做的事 cc 任选其一。已验证 `affinity[]` 可以作为 `list<struct>` 存取：Daft 写出，DuckDB 用 `list()` 按 `3A_ID` 分组追加，Daft 和 pyarrow 都能读回，`None` 保留。全为 `None` 的列会被推断成 `null` 类型，所以每张表的 schema 必须用 pyarrow 显式声明。
 
 Ray 不采用。Ray 解决的是跨机调度和 actor 编排，这里是单机 CPU 密集的 distinct 序列并行。Daft 在本机直接并行，并带 Ray 后端（`daft.set_runner_ray`，已确认存在），需要跨机时切换，业务代码不变。
 
@@ -246,8 +246,8 @@ Ray 不采用。Ray 解决的是跨机调度和 actor 编排，这里是单机 C
 
 - **缓存键**：键应覆盖输入内容 hash、模块版本、规则版本、决策文件 hash、外部结构快照 hash，键不变则跳过。每个阶段、每个 SRC 的产物旁写 `.key`。
 - **distinct 键**：`ab`、`ag` 阶段按 `ab_key`、`ag_key` 去重后处理。没有逐行序列的结构型 SRC（R14、R15、R50）再分两层：parent 恢复与 `vdomain` 以 `(结构引用, 链)` 为键只做一次，随后按编号映射应用点突变并校验原残基，长度不变，可变域边界按位置继承，不重跑 ANARCI；含插入或缺失的编辑才重跑 `vdomain`。R50 的 942,723 行 FoldX 来自 1,409 个 PDB，只有这样才能省算。
-- **并行**：SRC 之间并行；distinct 键之间并行，ANARCI 按批调用。规模参照：R09 约 460 万行（其中 li2023 两张表 1,259,700 与 1,903,927 行），R23 1,259,700 行，R50 963,552 行（FoldX 942,723，Flex 20,829）。ANARCI 在 host 上的实测（IMGT 编号，重链序列，每批 500 条）：单进程 69 条/秒，8 进程 557，32 进程 1,967，随进程数线性增长；单次调用的 `ncpu` 取 8 与 16 没有差别，并行靠多批多进程。100 万条 distinct 序列在 32 进程下约 9 分钟。Daft UDF 内调用 ANARCI 的并行方式尚未实测，由 cc 实测后选择 Daft 并行或自管多进程。
-- **外部输入**：RCSB 结构经 mihomo 代理只读拉取，按 PDB ID 缓存到 `/data_new/ywy/cache/rcsb/`，缓存文件 hash 进入缓存键。
+- **并行**：SRC 之间并行；distinct 键之间并行，ANARCI 按批调用。规模参照：R09 约 460 万行（其中 li2023 两张表 1,259,700 与 1,903,927 行），R23 1,259,700 行，R50 963,552 行（FoldX 942,723，Flex 20,829）。ANARCI 在 host 上的实测（IMGT 编号，重链序列，每批 500 条）：单进程 69 条/秒，8 进程 557，32 进程 1,967，随进程数线性增长；单次调用的 `ncpu` 取 8 与 16 没有差别，并行靠多批多进程。100 万条 distinct 序列在 32 进程下约 9 分钟。Daft 原生执行器下，批量 UDF 调用 ANARCI 的实测（16,000 条，`batch_size=500`）：默认在线程里运行，156 条/秒；`use_process=True` 为 1,397 条/秒，接近纯多进程的水平。`into_partitions` 在原生执行器上不起作用，批大小用 `batch_size` 控制；`max_concurrency` 只适用于 `@daft.cls`。
+- **外部输入**：结构优先取 SRC 自带的文件（R14 的 `AB-Bind-Database/*.pdb` 可直接解析）；SRC 里没有的，经 mihomo 代理从 RCSB 只读拉取，按 PDB ID 缓存到 `/data_new/ywy/cache/rcsb/`，缓存文件 hash 进入缓存键。
 - **merge 的断言**：同一 `AB_ID`、`AG_ID`、`3A_ID` 只对应一个 canonical 字符串，否则中止（hash 文档）；每个 `3A` 满足 modeling 的有效性。
 - **manifest**：ID 方案版本、清洗规则版本、代码 commit、工具版本（Daft、DuckDB、gemmi、ANARCI、HMMER）、决策文件 hash、各阶段行数、`qa_sample` 的种子。
 
