@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unified 3A ETL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+/* ===== tokens: ITS light palette; spacing / type steps from landing-page-design B1–B2 ===== */
+:root {
+  --bg: #F8FBFF;      /* ITS --note */
+  --ink: #0B0F13;     /* titles */
+  --text: #30353A;    /* ITS --text */
+  --soft: #697580;    /* ITS --soft-text */
+  --line: #D6DEEA;    /* hairlines, ghost glyphs */
+  --mid: #A9B4C0;     /* secondary strokes in figures */
+  --red: #CD2626;     /* ITS --lite-accent: the only accent — tension, focus */
+  --serif: "Libre Caslon Text", "Noto Serif SC", serif;
+  --sans: "Noto Sans SC", system-ui, sans-serif;
+  --mono: "JetBrains Mono", "Noto Sans SC", ui-monospace, monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; border-radius: 0; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, p, ul, ol { margin: 0; padding: 0; }
+code { font-family: var(--mono); color: var(--ink); font-size: .9em; }
+
+/* ===== stage: fixed 1920×1080, scaled to fit ===== */
+#deck {
+  position: absolute; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform: translate(-50%, -50%) scale(var(--s, 1));
+  background: var(--bg); overflow: hidden;
+}
+#progress {
+  position: absolute; left: 0; top: 0; z-index: 10;
+  width: 100%; height: 1px; background: var(--red);
+  transform-origin: left; transform: scaleX(0);
+  transition: transform .6s var(--ease);
+}
+#pageno {
+  position: absolute; right: 96px; bottom: 32px; z-index: 10;
+  font: 400 14px/20px var(--mono); letter-spacing: .08em; color: var(--soft);
+}
+
+/* ===== slides ===== */
+.slide {
+  position: absolute; inset: 0; padding: 80px 96px;
+  display: flex; flex-direction: column;
+  opacity: 0; visibility: hidden;
+  transition: opacity .6s var(--ease), visibility 0s .6s;
+}
+.slide.is-active { opacity: 1; visibility: visible; transition: opacity .6s var(--ease); }
+
+/* enter reveal: once per entry, then static */
+.slide [data-r] { opacity: 0; transform: translateY(32px); }
+.slide.is-active [data-r] {
+  opacity: 1; transform: none;
+  transition: opacity .7s var(--ease) calc(var(--i, 0) * 80ms),
+              transform .7s var(--ease) calc(var(--i, 0) * 80ms);
+}
+/* ?t=… renders stills: no transitions (screenshots, PDF export) */
+.still *, .still *::after { transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide [data-r], #progress { transition: none !important; }
+  .slide [data-r] { transform: none; }
+}
+
+/* ===== type ===== */
+.hd { position: relative; z-index: 2; padding-bottom: 24px; margin-bottom: 48px; border-bottom: 1px solid var(--ink); }
+.kicker { font: 500 14px/20px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--soft); margin-bottom: 8px; }
+.title { font: 400 60px/1 var(--serif); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.title.xl { font-size: 72px; line-height: 1; }
+.sub { font: 400 24px/32px var(--serif); letter-spacing: .08em; text-transform: uppercase; color: var(--ink); margin-bottom: 24px; }
+.lead { font: 400 30px/36px var(--sans); color: var(--ink); }
+.body { position: relative; z-index: 2; flex: 1; min-height: 0; display: grid; gap: 48px; }
+.body p, .body li { font-size: 24px; line-height: 32px; }
+.dense p, .dense li { font-size: 18px; line-height: 28px; }
+.body p.lead, .s-journey p.lead { font-size: 28px; line-height: 40px; }
+.stack { display: flex; flex-direction: column; gap: 24px; }
+.list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.list li { position: relative; padding-left: 32px; }
+.list li::before { content: ""; position: absolute; left: 0; top: 12px; width: 8px; height: 8px; background: var(--ink); }
+.dense .list li::before { top: 10px; }
+h4 { font: 500 24px/32px var(--sans); color: var(--ink); margin-bottom: 8px; }
+.dense h4 { font-size: 20px; line-height: 28px; }
+
+/* ===== ITS elements ===== */
+.tag { display: inline-block; font: 500 18px/28px var(--mono); color: var(--red); border: 1px solid currentColor; padding: 0 8px; }
+.tag.ink { color: var(--ink); }
+.tag.dashed { border-style: dashed; color: var(--soft); }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.quote { position: relative; border: 1px solid var(--ink); padding: 32px 96px 32px 32px; font: 400 30px/36px var(--sans); color: var(--ink); }
+.quote::after { content: "\201D"; position: absolute; top: 16px; right: 32px; font: 700 96px/1 var(--serif); color: var(--red); }
+.red { color: var(--red); }
+
+/* ===== figures ===== */
+.fig { position: relative; min-height: 0; }
+.fig.bleed { position: absolute; inset: 0; z-index: 1; }
+.fig > svg, .fig > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* SVG kit: ink strokes, one draw-in per entry (pathLength="1" on drawn shapes, --d = stagger step) */
+.fig svg { overflow: visible; fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: square; }
+.fig svg text { fill: var(--soft); stroke: none; font: 400 14px var(--mono); }
+.fig svg .k { stroke: var(--ink); }  .fig svg .s { stroke: var(--mid); }  .fig svg .r { stroke: var(--red); }
+.fig svg .fk { fill: var(--ink); stroke: none; } .fig svg .fr { fill: var(--red); stroke: none; } .fig svg .fs { fill: var(--mid); stroke: none; }
+.fig svg .dash { stroke-dasharray: 4 4; }
+.fig svg .w { stroke-width: 3; }
+.fig svg text.ti { fill: var(--ink); } .fig svg text.tr { fill: var(--red); }
+.fig svg .d { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.slide.is-active .fig svg .d { stroke-dashoffset: 0; transition: stroke-dashoffset 900ms var(--ease) calc(300ms + var(--d, 0) * 60ms); }
+.fig svg .f { opacity: 0; }
+.slide.is-active .fig svg .f { opacity: 1; transition: opacity 600ms var(--ease) calc(300ms + var(--d, 0) * 60ms); }
+/* 05: the tangle fades after the clean wiring is drawn */
+.fig svg .fade { opacity: 1; }
+.slide.is-active .fig svg .fade { opacity: .18; transition: opacity 1.2s var(--ease) 1.6s; }
+/* 07: the red wash retreats into the gate, the closed gate dissolves */
+.fig svg .wash { opacity: .16; transform-box: view-box; transform-origin: 560px 0; }
+.slide.is-active .fig svg .wash { transform: scaleX(0); transition: transform 1.1s var(--ease) 1s; }
+.slide.is-active .fig svg .shut { opacity: 0; transition: opacity .5s var(--ease) 1.1s; }
+/* three.js labels: projected each frame, centred on their anchor */
+.lbl { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; white-space: nowrap; font: 500 16px/20px var(--mono); color: var(--ink); translate: -50% -50%; }
+.lbl.m { color: var(--soft); font-weight: 400; font-size: 14px; }
+.lbl.r { color: var(--red); }
+@media (prefers-reduced-motion: reduce) { .fig svg .d { stroke-dashoffset: 0; } .fig svg .f { opacity: 1; } .fig svg * { transition: none !important; } }
+
+/* ===== per-slide layout ===== */
+/* 01 cover */
+.s-cover .cover-text { position: absolute; left: 96px; bottom: 96px; z-index: 2; display: flex; flex-direction: column; gap: 24px; }
+.s-cover .note { font: 400 20px/28px var(--sans); color: var(--soft); }
+
+/* 02 problem */
+.ghost {
+  position: absolute; right: -64px; bottom: -160px; z-index: 0; pointer-events: none;
+  font: 700 960px/1 var(--serif); color: transparent; -webkit-text-stroke: 2px var(--line);
+}
+.s-problem .body { grid-template-rows: auto 1fr; }
+.cols4 { display: grid; grid-template-columns: repeat(4, 1fr); }
+.cols4 > * { display: flex; flex-direction: column; gap: 24px; padding: 0 32px; }
+.cols4 > * + * { border-left: 1px solid var(--line); }
+.cols4 > :first-child { padding-left: 0; }
+.cols4 .fig { flex: none; height: 300px; }
+.cols4 p { font-size: 20px; line-height: 30px; }
+.num { font: 400 14px/20px var(--mono); letter-spacing: .16em; color: var(--soft); }
+
+/* 03 invariants */
+.s-inv .body { grid-template-columns: 760px 1fr; }
+/* term + definition rows (03, 10) */
+.defs { display: grid; grid-template-columns: max-content 1fr; gap: 16px 24px; align-items: baseline; margin: 0; }
+.defs dd { margin: 0; font-size: 20px; line-height: 30px; }
+
+/* 04 principles */
+.principles { display: flex; flex-direction: column; justify-content: space-between; }
+.principles > li { display: grid; grid-template-columns: 160px 64px 1fr 80px; align-items: center; gap: 24px; list-style: none; }
+.principles .rn { font: 400 96px/1 var(--serif); color: var(--ink); }
+.principles .dash { height: 2px; background: var(--red); }
+.principles .pt { font: 400 36px/40px var(--sans); color: var(--ink); }
+.principles .pt small { display: block; margin-top: 8px; font: 400 22px/32px var(--sans); color: var(--text); }
+.s-prin .intro { margin-bottom: 40px; }
+.principles .ref { font: 400 18px/28px var(--mono); color: var(--soft); text-align: right; }
+/* B11-style: rows rise from muted to full ink */
+.s-prin [data-r] { opacity: .3; transform: none; }
+
+/* 05 thin adapter */
+.s-adapter .body { grid-template-rows: auto 1fr; }
+.s-adapter .top { display: grid; grid-template-columns: 1fr 720px; gap: 48px; align-items: end; }
+.formula { font: 400 128px/1 var(--serif); color: var(--ink); letter-spacing: .02em; white-space: nowrap; }
+.formula .arrow { color: var(--soft); }
+.s-adapter .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; min-height: 0; }
+
+/* 06 distinct keys */
+.cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; }
+.cols3 > * { display: flex; flex-direction: column; gap: 24px; min-height: 0; }
+.cols3 .fig { flex: none; height: 400px; }
+.s-keys .body { grid-template-rows: auto 1fr; gap: 40px; }
+
+/* 07 output first */
+.s-output .body { grid-template-columns: 640px 1fr; }
+
+/* 08 journey */
+.s-journey .overlay { position: relative; z-index: 2; width: 720px; }
+.s-journey .overlay li { font-size: 20px; line-height: 30px; }
+.s-journey .overlay .list { gap: 12px; }
+.s-journey .overlay .list li::before { top: 11px; }
+
+/* 09 asymmetric */
+.s-asym .body { grid-template-rows: auto 1fr; }
+.s-asym .top { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+
+/* 10 ledger */
+.s-ledger .body { grid-template-columns: 560px 1fr; }
+
+/* 11 rulings + gaps */
+.split { grid-template-columns: 1fr 1px 1fr; gap: 64px; }
+.vrule { background: var(--red); }
+.items { display: flex; flex-direction: column; gap: 24px; }
+.item { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start; }
+.item .fig { height: 128px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 32px; }
+.grid2 > * { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+.grid2 .fig { height: 192px; }
+
+/* 12 modules */
+.s-mod .body { position: relative; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 0; border: 1px solid var(--ink); }
+.cell { position: relative; z-index: 2; padding: 32px; display: flex; flex-direction: column; gap: 16px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cell:nth-child(4n) { border-right: 0; }
+.cell:nth-child(n+5) { border-bottom: 0; }
+.cell .mn { font: 500 36px/40px var(--mono); color: var(--ink); }
+.cell .io { font-size: 18px; line-height: 28px; flex: 1; }
+.cell .role { font: 500 20px/28px var(--sans); color: var(--soft); margin-top: -8px; }
+.s-mod .intro { margin-bottom: 32px; }
+.s-mod .calls { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+/* 13 vdomain */
+.s-vd .body { grid-template-rows: auto 200px 1fr; gap: 32px; }
+.s-vd .slotwrap { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.s-vd .slotwrap .fig { flex: 1; }
+.s-vd .lower { display: grid; grid-template-columns: 1fr 560px; gap: 48px; min-height: 0; }
+.cases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.cases > * { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+.cases .fig { flex: 1; }
+.cases .k { font: 400 48px/1 var(--serif); color: var(--ink); }
+
+/* 14 mutate + resolve */
+.s-mr .body { grid-template-columns: 1fr 1px 1fr; gap: 64px; }
+.s-mr .half { display: flex; flex-direction: column; gap: 24px; min-height: 0; }
+.s-mr .half .fig { flex: 1; }
+.sig { font: 400 24px/32px var(--mono); color: var(--ink); }
+.coda { position: absolute; right: 96px; bottom: 80px; width: 128px; height: 128px; z-index: 2; }
+</style>
+</head>
+<body>
+<main id="deck" aria-label="3A ETL design presentation">
+<div id="progress"></div>
+<div id="pageno" aria-live="polite"></div>
+
+<!-- ============ 01 ============ -->
+<section class="slide s-cover" aria-label="01">
+  <div class="fig bleed" data-fig="cover"></div>
+  <div class="cover-text">
+    <div class="kicker" data-r>Lovyatee · 3A Data ETL</div>
+    <h1 class="title xl" data-r>From Heterogeneous Sources<br>to Unified 3A Datasets</h1>
+    <p class="lead" data-r>把格式各异的公开抗体–抗原亲和力数据，整理成同一种数据对象</p>
+    <p class="note" data-r>3A = Antibody · Antigen · Affinity：一个抗体、一个抗原，以及两者之间的全部亲和力测量。</p>
+  </div>
+</section>
+
+<!-- ============ 02 ============ -->
+<section class="slide s-problem" aria-label="02">
+  <div class="ghost" aria-hidden="true">3A</div>
+  <header class="hd" data-r>
+    <div class="kicker">I — Problem &amp; Stance</div>
+    <h2 class="title">The Problem We Solve</h2>
+  </header>
+  <div class="body">
+    <p class="lead" data-r>公开的抗体–抗原亲和力数据分散在许多数据集里，同一对分子常被重复收录，写法各不相同。我们要把它们整理成一份数据：每个抗体–抗原对只出现一次，带着它在所有来源里的全部测量，记作 <code>3A = (antibody, antigen, affinity[])</code>。难点有四处：</p>
+    <div class="cols4">
+      <div data-r>
+        <div class="fig" data-fig="p-shape"><svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet">
+  <g class="w">
+    <line class="s d" pathLength="1" x1="20" y1="40" x2="44" y2="40" style="--d:0"/><line class="d" pathLength="1" x1="52" y1="40" x2="300" y2="40" style="--d:1"/>
+    <line class="d" pathLength="1" x1="60" y1="76" x2="220" y2="76" style="--d:2"/><line class="s d" pathLength="1" x1="228" y1="76" x2="268" y2="76" style="--d:3"/>
+    <line class="s d" pathLength="1" x1="4" y1="112" x2="36" y2="112" style="--d:4"/><line class="d" pathLength="1" x1="44" y1="112" x2="344" y2="112" style="--d:5"/>
+    <line class="d" pathLength="1" x1="120" y1="148" x2="220" y2="148" style="--d:6"/>
+    <line class="d" pathLength="1" x1="24" y1="184" x2="164" y2="184" style="--d:7"/><line class="s d" pathLength="1" x1="172" y1="184" x2="188" y2="184" style="--d:8"/><line class="s d" pathLength="1" x1="196" y1="184" x2="232" y2="184" style="--d:9"/>
+    <line class="s d" pathLength="1" x1="72" y1="220" x2="96" y2="220" style="--d:10"/><line class="d" pathLength="1" x1="104" y1="220" x2="284" y2="220" style="--d:11"/><line class="r d" pathLength="1" x1="292" y1="220" x2="336" y2="220" style="--d:12"/>
+  </g>
+</svg></div>
+        <div class="num">01</div>
+        <h4>序列形态不一</h4>
+        <p>有的来源给成熟 VH/VL，有的给带信号肽和 His-tag 的构建体、完整 IgG 重链或 scFv，有的只给 PDB 编号，或 parent 加突变名。</p>
+      </div>
+      <div data-r>
+        <div class="fig" data-fig="p-dup"><svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet">
+  <g class="s">
+    <rect class="d" pathLength="1" x="16" y="32" width="96" height="176" style="--d:0"/><rect class="d" pathLength="1" x="132" y="32" width="96" height="176" style="--d:1"/><rect class="d" pathLength="1" x="248" y="32" width="96" height="176" style="--d:2"/>
+    <path class="d" pathLength="1" d="M32 64H96M32 88H84M32 136H96M32 160H72M148 64H200M148 112H212M148 136H192M148 184H204M264 88H320M264 112H308M264 136H328M264 160H296" style="--d:3"/>
+  </g>
+  <g class="f" style="--d:8">
+    <rect class="fr" x="32" y="106" width="12" height="12"/><line class="k" x1="52" y1="112" x2="96" y2="112"/>
+    <rect class="fr" x="148" y="82" width="12" height="12"/><line class="k" x1="168" y1="88" x2="212" y2="88"/>
+    <rect class="fr" x="264" y="178" width="12" height="12"/><line class="k" x1="284" y1="184" x2="328" y2="184"/>
+  </g>
+  <path class="r dash f" d="M38 118V226H154V94M154 226H270V190" style="--d:10"/>
+</svg></div>
+        <div class="num">02</div>
+        <h4>同一件事写了很多遍</h4>
+        <p>去信号肽、去标签、去恒定区、拆 scFv，本质都是定位可变域边界，规格里却拆成了 7 条规则。</p>
+      </div>
+      <div data-r>
+        <div class="fig" data-fig="p-conflict"><svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet">
+  <g class="w">
+    <path class="d" pathLength="1" d="M24 120H164M150 106L164 120L150 134" style="--d:0"/>
+    <path class="d" pathLength="1" d="M336 120H196M210 106L196 120L210 134" style="--d:0"/>
+  </g>
+  <text x="24" y="96">先拆 scFv</text><text x="336" y="96" text-anchor="end">先裁两端</text>
+  <g class="f" style="--d:10">
+    <circle class="fr" cx="180" cy="120" r="6"/><circle class="r" cx="180" cy="120" r="18"/>
+    <path class="r" d="M180 84V72M180 156V168M156 96L148 88M204 96L212 88M156 144L148 152M204 144L212 152"/>
+  </g>
+</svg></div>
+        <div class="num">03</div>
+        <h4>规则互相矛盾</h4>
+        <p>一条规则要求先拆 scFv 再裁两端，另一条要求反过来。两种顺序实现出来，结果不同。</p>
+      </div>
+      <div data-r>
+        <div class="fig" data-fig="p-unstructured"><svg viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet">
+  <g class="f" style="--d:0">
+    <text x="20" y="48" transform="rotate(-6 20 48)">README.md</text>
+    <text x="196" y="40" transform="rotate(4 196 40)">Target = ?</text>
+    <text x="64" y="104" transform="rotate(3 64 104)">"see Table S2"</text>
+    <text x="228" y="120" transform="rotate(-8 228 120)">metadata.json</text>
+    <text x="16" y="168" transform="rotate(-3 16 168)">col: Kd / IC50</text>
+    <text x="180" y="196" transform="rotate(6 180 196)">… wild type …</text>
+    <text x="40" y="224" transform="rotate(2 40 224)">§ Methods</text>
+  </g>
+  <g class="s">
+    <path class="d" pathLength="1" d="M20 60L92 52" style="--d:2"/><path class="d" pathLength="1" d="M200 52L260 57" style="--d:3"/>
+    <path class="d" pathLength="1" d="M70 116L170 121" style="--d:4"/><path class="d" pathLength="1" d="M234 132L310 121" style="--d:5"/>
+    <path class="d" pathLength="1" d="M180 208L250 215" style="--d:6"/>
+  </g>
+  <text class="tr f" x="300" y="216" style="--d:10;font-size:36px">?</text>
+</svg></div>
+        <div class="num">04</div>
+        <h4>关键信息不在表里</h4>
+        <p>实验用的是哪个抗原构建体、序列从哪来，常常只写在 README 或论文方法里，表里只有序列和 Kd。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 ============ -->
+<section class="slide s-inv" aria-label="03">
+  <header class="hd" data-r>
+    <div class="kicker">I — Problem &amp; Stance</div>
+    <h2 class="title">Design Invariants</h2>
+  </header>
+  <div class="body">
+    <div class="stack">
+      <p class="lead" data-r>实现可以边做边调，但有四样东西从一开始就固定，因为它们决定了产出对不对。</p>
+      <div data-r>
+        <div class="sub">Fixed</div>
+        <dl class="defs">
+          <dt><span class="tag ink">3A 形状</span></dt><dd>每个抗体–抗原对一条：<code>(3A_ID, antibody, antigen, affinity[])</code>。</dd>
+          <dt><span class="tag ink">测量五元组</span></dt><dd>每条测量记为 <code>(label, assay, condition, replicate, lineage)</code>，值照抄来源，不换算。</dd>
+          <dt><span class="tag ink">ID 公式</span></dt><dd>ID 只由清洗后的序列哈希得到，同一对分子在任何来源里 ID 都相同。</dd>
+          <dt><span class="tag ink">lineage 语法</span></dt><dd>每个值附一条来源记录：出自哪个文件、哪一行、哪一列，经过哪些处理。</dd>
+        </dl>
+      </div>
+      <div data-r>
+        <div class="sub">Adjustable</div>
+        <div class="tags">
+          <span class="tag dashed">中间表</span>
+          <span class="tag dashed">缓存键</span>
+          <span class="tag dashed">阶段划分</span>
+        </div>
+      </div>
+      <div class="quote" data-r>这四样定义了什么算「对」，其余只关系到怎么算出来。</div>
+    </div>
+    <div class="fig" data-fig="invariants" data-r></div>
+  </div>
+</section>
+
+<!-- ============ 04 ============ -->
+<section class="slide s-prin" aria-label="04">
+  <header class="hd" data-r>
+    <div class="kicker">II — Principles</div>
+    <h2 class="title">Design Principles</h2>
+  </header>
+  <p class="lead intro" data-r>每个来源配一个 adapter 负责读入，所有清洗交给共享模块。五条原则都围绕这个分工。</p>
+  <ol class="body principles">
+    <li data-r><span class="rn">I</span><span class="dash"></span><span class="pt">adapter 要薄<small>只读懂来源的格式，把原始行原样搬成统一的中间记录（record），不清洗，也不做生物学判断。</small></span><span class="ref">→ 05</span></li>
+    <li data-r><span class="rn">II</span><span class="dash"></span><span class="pt">清洗只写一次<small>裁剪、拆分、突变重建只在共享模块里实现，所有来源共用。</small></span><span class="ref">→ 05</span></li>
+    <li data-r><span class="rn">III</span><span class="dash"></span><span class="pt">相同的输入只算一次<small>先按输入去重再清洗，结果回填到每一行。</small></span><span class="ref">→ 06</span></li>
+    <li data-r><span class="rn">IV</span><span class="dash"></span><span class="pt">运行结果可复现<small>要读 README、论文才能判断的信息，运行前整理成带出处的决策文件；运行时只读文件，不调用 AI。</small></span><span class="ref"></span></li>
+    <li data-r><span class="rn">V</span><span class="dash"></span><span class="pt">以产出为目标<small>能得到有效 3A 就产出，排除只留给确实处理不了的记录。</small></span><span class="ref">→ 07</span></li>
+  </ol>
+</section>
+
+<!-- ============ 05 ============ -->
+<section class="slide s-adapter" aria-label="05">
+  <header class="hd" data-r>
+    <div class="kicker">II — Principles</div>
+    <h2 class="title">Thin Adapter</h2>
+  </header>
+  <div class="body">
+    <div class="top">
+      <div class="stack" data-r>
+        <div class="formula">N<span class="red">×</span>M <span class="arrow">→</span> N+M</div>
+        <p>来源格式各不相同，清洗规则却是通用的。把两者分开，工作量从「来源数 × 规则数」降到「来源数 + 规则数」。</p>
+      </div>
+      <ul class="list" data-r>
+        <li>列名、分隔符、占位符、突变写法，这些来源差异全部在 adapter 里消化。</li>
+        <li>共享模块按功能划分，内部不出现任何来源的名字。</li>
+        <li>检验办法：一旦模块里要写「如果是某个来源就……」，就是划分错了。该改模块本身，而不是加分支。</li>
+      </ul>
+    </div>
+    <div class="pair">
+      <div class="fig" data-fig="nxm" data-r><svg viewBox="0 0 840 400" preserveAspectRatio="xMidYMid meet">
+  <text x="32" y="16">来源</text><text x="808" y="16" text-anchor="end">清洗规则</text>
+  <g class="fade"><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="32" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="80" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="128" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="176" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="224" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="272" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="320" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="56" x2="776" y2="368" style="--d:0"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="32" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="80" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="128" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="176" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="224" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="272" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="320" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="776" y2="368" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="32" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="80" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="128" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="176" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="224" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="272" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="320" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="776" y2="368" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="32" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="80" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="128" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="176" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="224" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="272" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="320" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="776" y2="368" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="32" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="80" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="128" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="176" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="224" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="272" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="320" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="776" y2="368" style="--d:4"/></g>
+  <rect class="fk" x="32" y="48" width="16" height="16"/><rect class="fk" x="32" y="120" width="16" height="16"/><rect class="fk" x="32" y="192" width="16" height="16"/><rect class="fk" x="32" y="264" width="16" height="16"/><rect class="fk" x="32" y="336" width="16" height="16"/>
+  <circle class="k" cx="792" cy="32" r="8" fill="var(--bg)"/><circle class="k" cx="792" cy="80" r="8" fill="var(--bg)"/><circle class="k" cx="792" cy="128" r="8" fill="var(--bg)"/><circle class="k" cx="792" cy="176" r="8" fill="var(--bg)"/><circle class="k" cx="792" cy="224" r="8" fill="var(--bg)"/><circle class="k" cx="792" cy="272" r="8" fill="var(--bg)"/><circle class="k" cx="792" cy="320" r="8" fill="var(--bg)"/><circle class="k" cx="792" cy="368" r="8" fill="var(--bg)"/>
+  <text x="420" y="392" text-anchor="middle">每个来源各写一遍：5 × 8 = 40 份实现</text>
+</svg></div>
+      <div class="fig" data-fig="npm" data-r><svg viewBox="0 0 840 400" preserveAspectRatio="xMidYMid meet">
+  <text x="32" y="16">来源</text><text x="200" y="16" text-anchor="middle" class="tr">adapter</text>
+  <text x="420" y="16" text-anchor="middle">统一记录</text><text x="808" y="16" text-anchor="end">共享模块</text>
+  <rect class="fk" x="32" y="48" width="16" height="16"/><rect class="fk" x="32" y="120" width="16" height="16"/><rect class="fk" x="32" y="192" width="16" height="16"/><rect class="fk" x="32" y="264" width="16" height="16"/><rect class="fk" x="32" y="336" width="16" height="16"/>
+  <line class="d" pathLength="1" x1="48" y1="56" x2="196" y2="56" style="--d:0"/><line class="d" pathLength="1" x1="204" y1="56" x2="420" y2="56" style="--d:1"/><line class="d" pathLength="1" x1="48" y1="128" x2="196" y2="128" style="--d:1"/><line class="d" pathLength="1" x1="204" y1="128" x2="420" y2="128" style="--d:2"/><line class="d" pathLength="1" x1="48" y1="200" x2="196" y2="200" style="--d:2"/><line class="d" pathLength="1" x1="204" y1="200" x2="420" y2="200" style="--d:3"/><line class="d" pathLength="1" x1="48" y1="272" x2="196" y2="272" style="--d:3"/><line class="d" pathLength="1" x1="204" y1="272" x2="420" y2="272" style="--d:4"/><line class="d" pathLength="1" x1="48" y1="344" x2="196" y2="344" style="--d:4"/><line class="d" pathLength="1" x1="204" y1="344" x2="420" y2="344" style="--d:5"/>
+  <line class="r w f" x1="200" y1="40" x2="200" y2="72" style="--d:0"/><line class="r w f" x1="200" y1="112" x2="200" y2="144" style="--d:1"/><line class="r w f" x1="200" y1="184" x2="200" y2="216" style="--d:2"/><line class="r w f" x1="200" y1="256" x2="200" y2="288" style="--d:3"/><line class="r w f" x1="200" y1="328" x2="200" y2="360" style="--d:4"/>
+  <line class="w d" pathLength="1" x1="420" y1="32" x2="420" y2="368" style="--d:6"/>
+  <line class="d" pathLength="1" x1="420" y1="32" x2="600" y2="32" style="--d:8"/><rect class="k f" x="600" y="18" width="208" height="28" fill="var(--bg)" style="--d:8"/><text class="ti f" x="616" y="37" style="--d:8">序列规范化</text><line class="d" pathLength="1" x1="420" y1="80" x2="600" y2="80" style="--d:9"/><rect class="k f" x="600" y="66" width="208" height="28" fill="var(--bg)" style="--d:9"/><text class="ti f" x="616" y="85" style="--d:9">可变域定位</text><line class="d" pathLength="1" x1="420" y1="128" x2="600" y2="128" style="--d:10"/><rect class="k f" x="600" y="114" width="208" height="28" fill="var(--bg)" style="--d:10"/><text class="ti f" x="616" y="133" style="--d:10">突变重建</text><line class="d" pathLength="1" x1="420" y1="176" x2="600" y2="176" style="--d:11"/><rect class="k f" x="600" y="162" width="208" height="28" fill="var(--bg)" style="--d:11"/><text class="ti f" x="616" y="181" style="--d:11">结构读取</text><line class="d" pathLength="1" x1="420" y1="224" x2="600" y2="224" style="--d:12"/><rect class="k f" x="600" y="210" width="208" height="28" fill="var(--bg)" style="--d:12"/><text class="ti f" x="616" y="229" style="--d:12">抗原片段</text><line class="d" pathLength="1" x1="420" y1="272" x2="600" y2="272" style="--d:13"/><rect class="k f" x="600" y="258" width="208" height="28" fill="var(--bg)" style="--d:13"/><text class="ti f" x="616" y="277" style="--d:13">证据择优</text><line class="d" pathLength="1" x1="420" y1="320" x2="600" y2="320" style="--d:14"/><rect class="k f" x="600" y="306" width="208" height="28" fill="var(--bg)" style="--d:14"/><text class="ti f" x="616" y="325" style="--d:14">ID 生成</text><line class="d" pathLength="1" x1="420" y1="368" x2="600" y2="368" style="--d:15"/><rect class="k f" x="600" y="354" width="208" height="28" fill="var(--bg)" style="--d:15"/><text class="ti f" x="616" y="373" style="--d:15">来源记录</text>
+  <text x="420" y="392" text-anchor="middle">5 个 adapter + 8 个模块 = 13</text>
+</svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 ============ -->
+<section class="slide s-keys" aria-label="06">
+  <header class="hd" data-r>
+    <div class="kicker">II — Principles</div>
+    <h2 class="title">Driven by Distinct Keys</h2>
+  </header>
+  <div class="body dense">
+    <p class="lead" data-r>大型数据集里，成千上万行常共用同一条序列，比如整个突变扫描库都针对同一个抗原。所以清洗不按行做，而按「不同的输入」做。</p>
+    <div class="cols3">
+    <div data-r>
+      <div class="fig" data-fig="k-funnel"><svg viewBox="0 0 520 360" preserveAspectRatio="xMidYMid meet"><text x="40" y="16" text-anchor="middle">原始行</text><text x="260" y="16" text-anchor="middle" class="tr">去重键</text><text x="480" y="16" text-anchor="middle">回填</text><path class="s d" pathLength="1" d="M48 32C150 32 150 84 244 84" style="--d:0"/><path class="s d" pathLength="1" d="M276 84C370 84 370 32 472 32" style="--d:16"/><rect class="fk" x="34" y="26" width="12" height="12"/><text x="22" y="37" text-anchor="end">a</text><rect class="k f" x="474" y="26" width="12" height="12" fill="var(--bg)" style="--d:24"/><path class="s d" pathLength="1" d="M48 58C150 58 150 148 244 148" style="--d:1"/><path class="s d" pathLength="1" d="M276 148C370 148 370 58 472 58" style="--d:17"/><rect class="fk" x="34" y="52" width="12" height="12"/><text x="22" y="63" text-anchor="end">b</text><rect class="k f" x="474" y="52" width="12" height="12" fill="var(--bg)" style="--d:25"/><path class="s d" pathLength="1" d="M48 84C150 84 150 84 244 84" style="--d:2"/><path class="s d" pathLength="1" d="M276 84C370 84 370 84 472 84" style="--d:18"/><rect class="fk" x="34" y="78" width="12" height="12"/><text x="22" y="89" text-anchor="end">a</text><rect class="k f" x="474" y="78" width="12" height="12" fill="var(--bg)" style="--d:26"/><path class="s d" pathLength="1" d="M48 110C150 110 150 212 244 212" style="--d:3"/><path class="s d" pathLength="1" d="M276 212C370 212 370 110 472 110" style="--d:19"/><rect class="fk" x="34" y="104" width="12" height="12"/><text x="22" y="115" text-anchor="end">c</text><rect class="k f" x="474" y="104" width="12" height="12" fill="var(--bg)" style="--d:27"/><path class="s d" pathLength="1" d="M48 136C150 136 150 148 244 148" style="--d:4"/><path class="s d" pathLength="1" d="M276 148C370 148 370 136 472 136" style="--d:20"/><rect class="fk" x="34" y="130" width="12" height="12"/><text x="22" y="141" text-anchor="end">b</text><rect class="k f" x="474" y="130" width="12" height="12" fill="var(--bg)" style="--d:28"/><path class="s d" pathLength="1" d="M48 162C150 162 150 84 244 84" style="--d:5"/><path class="s d" pathLength="1" d="M276 84C370 84 370 162 472 162" style="--d:21"/><rect class="fk" x="34" y="156" width="12" height="12"/><text x="22" y="167" text-anchor="end">a</text><rect class="k f" x="474" y="156" width="12" height="12" fill="var(--bg)" style="--d:29"/><path class="s d" pathLength="1" d="M48 188C150 188 150 276 244 276" style="--d:6"/><path class="s d" pathLength="1" d="M276 276C370 276 370 188 472 188" style="--d:22"/><rect class="fk" x="34" y="182" width="12" height="12"/><text x="22" y="193" text-anchor="end">d</text><rect class="k f" x="474" y="182" width="12" height="12" fill="var(--bg)" style="--d:30"/><path class="s d" pathLength="1" d="M48 214C150 214 150 212 244 212" style="--d:7"/><path class="s d" pathLength="1" d="M276 212C370 212 370 214 472 214" style="--d:23"/><rect class="fk" x="34" y="208" width="12" height="12"/><text x="22" y="219" text-anchor="end">c</text><rect class="k f" x="474" y="208" width="12" height="12" fill="var(--bg)" style="--d:31"/><path class="s d" pathLength="1" d="M48 240C150 240 150 84 244 84" style="--d:8"/><path class="s d" pathLength="1" d="M276 84C370 84 370 240 472 240" style="--d:24"/><rect class="fk" x="34" y="234" width="12" height="12"/><text x="22" y="245" text-anchor="end">a</text><rect class="k f" x="474" y="234" width="12" height="12" fill="var(--bg)" style="--d:32"/><path class="s d" pathLength="1" d="M48 266C150 266 150 148 244 148" style="--d:9"/><path class="s d" pathLength="1" d="M276 148C370 148 370 266 472 266" style="--d:25"/><rect class="fk" x="34" y="260" width="12" height="12"/><text x="22" y="271" text-anchor="end">b</text><rect class="k f" x="474" y="260" width="12" height="12" fill="var(--bg)" style="--d:33"/><path class="s d" pathLength="1" d="M48 292C150 292 150 276 244 276" style="--d:10"/><path class="s d" pathLength="1" d="M276 276C370 276 370 292 472 292" style="--d:26"/><rect class="fk" x="34" y="286" width="12" height="12"/><text x="22" y="297" text-anchor="end">d</text><rect class="k f" x="474" y="286" width="12" height="12" fill="var(--bg)" style="--d:34"/><path class="s d" pathLength="1" d="M48 318C150 318 150 148 244 148" style="--d:11"/><path class="s d" pathLength="1" d="M276 148C370 148 370 318 472 318" style="--d:27"/><rect class="fk" x="34" y="312" width="12" height="12"/><text x="22" y="323" text-anchor="end">b</text><rect class="k f" x="474" y="312" width="12" height="12" fill="var(--bg)" style="--d:35"/><g class="f" style="--d:12"><rect class="fr" x="246" y="70" width="28" height="28"/><text x="260" y="89" text-anchor="middle" style="fill:var(--bg)">a</text></g><g class="f" style="--d:13"><rect class="fr" x="246" y="134" width="28" height="28"/><text x="260" y="153" text-anchor="middle" style="fill:var(--bg)">b</text></g><g class="f" style="--d:14"><rect class="fr" x="246" y="198" width="28" height="28"/><text x="260" y="217" text-anchor="middle" style="fill:var(--bg)">c</text></g><g class="f" style="--d:15"><rect class="fr" x="246" y="262" width="28" height="28"/><text x="260" y="281" text-anchor="middle" style="fill:var(--bg)">d</text></g><text x="260" y="352" text-anchor="middle">12 行 → 4 次清洗 → 12 行</text></svg></div>
+      <h4>同一个输入只算一次</h4>
+      <p>按清洗输入去重，每种输入对应一个去重键（distinct key）。每个键清洗一次，再按键 join 回每一行。图中 12 行只有 4 种输入，所以只算 4 次。</p>
+    </div>
+    <div data-r>
+      <div class="fig" data-fig="k-cachekey"><svg viewBox="0 0 520 360" preserveAspectRatio="xMidYMid meet"><circle class="w d" pathLength="1" cx="64" cy="132" r="36" style="--d:0"/><circle class="s" cx="64" cy="132" r="12"/><line class="w d" pathLength="1" x1="100" y1="132" x2="496" y2="132" style="--d:1"/><text x="64" y="196" text-anchor="middle">去重键</text><g class="f" style="--d:4"><rect class="k" x="166" y="24" width="60" height="24" fill="var(--bg)"/><text class="ti" x="196" y="41" text-anchor="middle">标签</text></g><line class="d" pathLength="1" x1="196" y1="48" x2="196" y2="132" style="--d:6"/><rect class="fk f" x="184" y="132" width="24" height="34" style="--d:10"/><g class="f" style="--d:5"><rect class="k" x="232" y="24" width="60" height="24" fill="var(--bg)"/><text class="ti" x="262" y="41" text-anchor="middle">结构</text></g><line class="d" pathLength="1" x1="262" y1="48" x2="262" y2="132" style="--d:7"/><rect class="fk f" x="250" y="132" width="24" height="22" style="--d:11"/><g class="f" style="--d:6"><rect class="k" x="298" y="24" width="60" height="24" fill="var(--bg)"/><text class="ti" x="328" y="41" text-anchor="middle">边界</text></g><line class="d" pathLength="1" x1="328" y1="48" x2="328" y2="132" style="--d:8"/><rect class="fk f" x="316" y="132" width="24" height="40" style="--d:12"/><g class="f" style="--d:7"><rect class="k" x="364" y="24" width="60" height="24" fill="var(--bg)"/><text class="ti" x="394" y="41" text-anchor="middle">突变</text></g><line class="d" pathLength="1" x1="394" y1="48" x2="394" y2="132" style="--d:9"/><rect class="fk f" x="382" y="132" width="24" height="28" style="--d:13"/><g class="f" style="--d:8"><rect class="k" x="430" y="24" width="60" height="24" fill="var(--bg)"/><text class="ti" x="460" y="41" text-anchor="middle">决策</text></g><line class="d" pathLength="1" x1="460" y1="48" x2="460" y2="132" style="--d:10"/><rect class="fk f" x="448" y="132" width="24" height="46" style="--d:14"/><text x="160" y="16">evidence</text><line class="r w d" pathLength="1" x1="120" y1="232" x2="500" y2="232" style="--d:14"/><g class="f" style="--d:16"><rect class="s dash" x="134" y="276" width="112" height="24"/><text x="190" y="293" text-anchor="middle">名称</text><line class="s" x1="190" y1="276" x2="190" y2="244"/><path class="r" d="M184 238L196 250M196 238L184 250"/></g><g class="f" style="--d:17"><rect class="s dash" x="254" y="276" width="112" height="24"/><text x="310" y="293" text-anchor="middle">突变原文</text><line class="s" x1="310" y1="276" x2="310" y2="244"/><path class="r" d="M304 238L316 250M316 238L304 250"/></g><g class="f" style="--d:18"><rect class="s dash" x="384" y="276" width="112" height="24"/><text x="440" y="293" text-anchor="middle">来源描述</text><line class="s" x1="440" y1="276" x2="440" y2="244"/><path class="r" d="M434 238L446 250M446 238L434 250"/></g><text x="134" y="293" text-anchor="end">notes</text><text x="440" y="336" text-anchor="middle">→ 只写入来源记录</text></svg></div>
+      <h4>什么算「不同的输入」</h4>
+      <p>来源边界、构建体标签、结构引用、待应用的突变会改变清洗结果，称为 evidence，计入键。名称、突变原文只用来记录出处，称为 notes，不计入键，否则同一条序列会因名字不同被重复计算。</p>
+    </div>
+    <div data-r>
+      <div class="fig" data-fig="k-twolayer"><svg viewBox="0 0 520 360" preserveAspectRatio="xMidYMid meet"><text x="48" y="16">第一层 · 每个 (结构, 链) 编号一次</text><line class="w d" pathLength="1" x1="48" y1="44" x2="420" y2="44" style="--d:0"/><line class="r w d" pathLength="1" x1="136" y1="44" x2="316" y2="44" style="--d:2;stroke-width:8"/><text class="tr" x="432" y="49">编号 ×1</text><path class="s dash d" pathLength="1" d="M136 52V340M316 52V340" style="--d:4"/><text x="48" y="92">第二层 · 点突变沿用可变域边界</text><path class="s d" pathLength="1" d="M24 44H48M24 44V320" style="--d:5"/><path class="s d" pathLength="1" d="M24 120H40" style="--d:6"/><line class="s d" pathLength="1" x1="48" y1="120" x2="420" y2="120" style="--d:6"/><line class="w d" pathLength="1" x1="136" y1="120" x2="316" y2="120" style="--d:8"/><g class="f" style="--d:12"><rect class="fr" x="166" y="112" width="8" height="16"/><text x="432" y="125">S31A</text></g><path class="s d" pathLength="1" d="M24 160H40" style="--d:7"/><line class="s d" pathLength="1" x1="48" y1="160" x2="420" y2="160" style="--d:7"/><line class="w d" pathLength="1" x1="136" y1="160" x2="316" y2="160" style="--d:9"/><g class="f" style="--d:13"><rect class="fr" x="210" y="152" width="8" height="16"/><text x="432" y="165">Y52F</text></g><path class="s d" pathLength="1" d="M24 200H40" style="--d:8"/><line class="s d" pathLength="1" x1="48" y1="200" x2="420" y2="200" style="--d:8"/><line class="w d" pathLength="1" x1="136" y1="200" x2="316" y2="200" style="--d:10"/><g class="f" style="--d:14"><rect class="fr" x="236" y="192" width="8" height="16"/><text x="432" y="205">D56N</text></g><path class="s d" pathLength="1" d="M24 240H40" style="--d:9"/><line class="s d" pathLength="1" x1="48" y1="240" x2="420" y2="240" style="--d:9"/><line class="w d" pathLength="1" x1="136" y1="240" x2="316" y2="240" style="--d:11"/><g class="f" style="--d:15"><rect class="fr" x="282" y="232" width="8" height="16"/><text x="432" y="245">W103R</text></g><path class="s d" pathLength="1" d="M24 280H40" style="--d:10"/><line class="s d" pathLength="1" x1="48" y1="280" x2="420" y2="280" style="--d:10"/><line class="w d" pathLength="1" x1="136" y1="280" x2="316" y2="280" style="--d:12"/><g class="f" style="--d:16"><rect class="fr" x="224" y="272" width="8" height="16"/><text x="432" y="285">T57A</text></g><path class="s d" pathLength="1" d="M24 320H40" style="--d:11"/><line class="s d" pathLength="1" x1="48" y1="320" x2="420" y2="320" style="--d:11"/><line class="w d" pathLength="1" x1="136" y1="320" x2="316" y2="320" style="--d:13"/><g class="f" style="--d:17"><rect class="fr" x="156" y="312" width="8" height="16"/><text x="432" y="325">N92D</text></g></svg></div>
+      <h4>突变扫描数据：两层键</h4>
+      <p>有些来源只给一个 PDB 和大量点突变。第一层：每个 (结构, 链) 只恢复、编号一次 parent。第二层：点突变按编号落到 parent 上，沿用它的可变域边界。只有插入或缺失才重新编号。</p>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 ============ -->
+<section class="slide s-output" aria-label="07">
+  <header class="hd" data-r>
+    <div class="kicker">II — Principles</div>
+    <h2 class="title">Output First</h2>
+  </header>
+  <div class="body">
+    <div class="stack">
+      <p class="lead" data-r>目标是产出可用的 3A，而不是让每条记录都满足每一条规则。</p>
+      <p data-r>规格里的排除条件，例如「找不到可变域就排除」，只是默认处理，不是必须执行的拒绝规则。</p>
+      <div class="quote" data-r>一个条件挡掉某个来源的大部分记录时，更可能是条件不适合这批数据。该调整的是处理方式，并把调整写进来源记录。</div>
+      <p data-r>被排除的记录不会丢：排除日志记下原因和原始位置，条件改好后可以从原始数据直接重跑。</p>
+    </div>
+    <div class="fig" data-fig="gate" data-r><svg viewBox="0 0 1000 720" preserveAspectRatio="xMidYMid meet"><text x="60" y="32" text-anchor="middle">原始记录</text><text x="560" y="32" text-anchor="middle" class="ti">排除条件</text><text x="940" y="32" text-anchor="middle">3A</text><rect class="fr wash" x="84" y="48" width="476" height="552"/><rect class="fk" x="54" y="66" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="72" x2="552" y2="72" style="--d:0"/><line class="d" pathLength="1" x1="568" y1="72" x2="928" y2="72" style="--d:24"/><rect class="k f" x="934" y="66" width="12" height="12" fill="var(--bg)" style="--d:26"/><rect class="fk" x="54" y="122" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="128" x2="552" y2="128" style="--d:1"/><line class="d" pathLength="1" x1="568" y1="128" x2="928" y2="128" style="--d:25"/><rect class="k f" x="934" y="122" width="12" height="12" fill="var(--bg)" style="--d:27"/><rect class="fk" x="54" y="178" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="184" x2="552" y2="184" style="--d:2"/><line class="d" pathLength="1" x1="568" y1="184" x2="928" y2="184" style="--d:26"/><rect class="k f" x="934" y="178" width="12" height="12" fill="var(--bg)" style="--d:28"/><rect class="fk" x="54" y="234" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="240" x2="552" y2="240" style="--d:3"/><path class="r d" pathLength="1" d="M552 240C600 240 600 660 680 660H760" style="--d:26"/><rect class="fr f" x="760" y="654" width="12" height="12" style="--d:28"/><path class="r dash f" d="M766 666V694H36V240H52" style="--d:30;stroke-width:1"/><line class="r w" x1="560" y1="222" x2="560" y2="258" style="stroke-width:6"/><rect class="fk" x="54" y="290" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="296" x2="552" y2="296" style="--d:4"/><line class="d" pathLength="1" x1="568" y1="296" x2="928" y2="296" style="--d:28"/><rect class="k f" x="934" y="290" width="12" height="12" fill="var(--bg)" style="--d:30"/><rect class="fk" x="54" y="346" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="352" x2="552" y2="352" style="--d:5"/><line class="d" pathLength="1" x1="568" y1="352" x2="928" y2="352" style="--d:29"/><rect class="k f" x="934" y="346" width="12" height="12" fill="var(--bg)" style="--d:31"/><rect class="fk" x="54" y="402" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="408" x2="552" y2="408" style="--d:6"/><line class="d" pathLength="1" x1="568" y1="408" x2="928" y2="408" style="--d:30"/><rect class="k f" x="934" y="402" width="12" height="12" fill="var(--bg)" style="--d:32"/><rect class="fk" x="54" y="458" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="464" x2="552" y2="464" style="--d:7"/><path class="r d" pathLength="1" d="M552 464C600 464 600 660 680 660H760" style="--d:27"/><rect class="fr f" x="760" y="654" width="12" height="12" style="--d:29"/><path class="r dash f" d="M766 666V702H36V464H52" style="--d:31;stroke-width:1"/><line class="r w" x1="560" y1="446" x2="560" y2="482" style="stroke-width:6"/><rect class="fk" x="54" y="514" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="520" x2="552" y2="520" style="--d:8"/><line class="d" pathLength="1" x1="568" y1="520" x2="928" y2="520" style="--d:32"/><rect class="k f" x="934" y="514" width="12" height="12" fill="var(--bg)" style="--d:34"/><rect class="fk" x="54" y="570" width="12" height="12"/><line class="d" pathLength="1" x1="72" y1="576" x2="552" y2="576" style="--d:9"/><line class="d" pathLength="1" x1="568" y1="576" x2="928" y2="576" style="--d:33"/><rect class="k f" x="934" y="570" width="12" height="12" fill="var(--bg)" style="--d:35"/><line class="s dash" x1="560" y1="40" x2="560" y2="608"/><rect class="fk shut" x="556" y="48" width="8" height="552"/><text class="tr f" x="780" y="665" style="--d:30">排除日志</text><text class="f" x="36" y="724" style="--d:31">保留原始位置 · 可重跑</text></svg></div>
+  </div>
+</section>
+
+<!-- ============ 08 ============ -->
+<section class="slide s-journey" aria-label="08">
+  <div class="fig bleed" data-fig="journey"></div>
+  <header class="hd" data-r>
+    <div class="kicker">III — Data Flow</div>
+    <h2 class="title">The Journey of a Record</h2>
+  </header>
+  <div class="overlay stack">
+    <p class="lead" data-r>一条原始数据行变成 3A，要经过四步。</p>
+    <ul class="list" data-r>
+      <li>读入：adapter 把原始行拆成一条或多条中间记录（record），每条含抗体输入、抗原输入和若干测量。</li>
+      <li>一行可能拆出多条，例如突变体和 WT、一个抗体对多个抗原，所以 record 按 <code>(来源, 文件, 行号, 角色)</code> 编号。</li>
+      <li>分三支：抗体（AB）、抗原（AG）、测量（AFF）各自清洗。</li>
+      <li>汇合 assemble：按 record 编号对齐三支，检查能否构成有效 3A，算出 3A_ID。</li>
+      <li>合并 merge：跨来源按 3A_ID 分组，测量追加进同一个 affinity[]。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 09 ============ -->
+<section class="slide s-asym" aria-label="09">
+  <header class="hd" data-r>
+    <div class="kicker">III — Data Flow</div>
+    <h2 class="title">Asymmetric 3A Pathways</h2>
+  </header>
+  <div class="body">
+    <div class="top">
+      <div class="stack" data-r>
+        <p class="lead">三支看似对称，处理方式并不一样：抗体和抗原需要共享模块，测量不需要。</p>
+        <div class="quote">没有跨行逻辑，就没有必要抽出模块。</div>
+      </div>
+      <div class="stack" data-r>
+        <p>抗体、抗原两支有跨行工作：很多行引用同一条序列，要先去重；裁剪、拆分、突变重建、结构读取都调用共享模块。</p>
+        <p>测量支只做行内工作：判断一个值算不算测量（空值、Fail 不算；n.b. 即检测不到结合，算一条定性测量），把一行的多个读数拆开，记下原始列名。不去重，不聚合，所以不设模块，在 adapter 里完成。</p>
+      </div>
+    </div>
+    <div class="fig" data-fig="lanes" data-r><svg viewBox="0 0 1728 540" preserveAspectRatio="xMidYMid meet"><text class="ti" x="0" y="90" style="font-size:20px">抗体 AB</text><rect class="fk" x="184" y="23" width="10" height="10"/><path class="d" pathLength="1" d="M200 28C530 28 530 37.33333333333333 844 37.33333333333333" style="--d:0"/><path class="d" pathLength="1" d="M876 37.33333333333333C1190 37.33333333333333 1190 28 1520 28H1600" style="--d:10"/><rect class="fk" x="184" y="51" width="10" height="10"/><path class="d" pathLength="1" d="M200 56C530 56 530 84.0 844 84.0" style="--d:1"/><path class="d" pathLength="1" d="M876 84.0C1190 84.0 1190 56 1520 56H1600" style="--d:11"/><rect class="fk" x="184" y="79" width="10" height="10"/><path class="d" pathLength="1" d="M200 84C530 84 530 37.33333333333333 844 37.33333333333333" style="--d:2"/><path class="d" pathLength="1" d="M876 37.33333333333333C1190 37.33333333333333 1190 84 1520 84H1600" style="--d:12"/><rect class="fk" x="184" y="107" width="10" height="10"/><path class="d" pathLength="1" d="M200 112C530 112 530 130.66666666666669 844 130.66666666666669" style="--d:3"/><path class="d" pathLength="1" d="M876 130.66666666666669C1190 130.66666666666669 1190 112 1520 112H1600" style="--d:13"/><rect class="fk" x="184" y="135" width="10" height="10"/><path class="d" pathLength="1" d="M200 140C530 140 530 84.0 844 84.0" style="--d:4"/><path class="d" pathLength="1" d="M876 84.0C1190 84.0 1190 140 1520 140H1600" style="--d:14"/><rect class="fr f" x="846" y="23.33333333333333" width="28" height="28" style="--d:8"/><rect class="fr f" x="846" y="70.0" width="28" height="28" style="--d:8"/><rect class="fr f" x="846" y="116.66666666666669" width="28" height="28" style="--d:8"/><text class="tr f" x="1624" y="90" style="--d:12">跨行 → 共享模块</text><text class="ti" x="0" y="270" style="font-size:20px">抗原 AG</text><rect class="fk" x="184" y="203" width="10" height="10"/><path class="d" pathLength="1" d="M200 208C530 208 530 229.0 844 229.0" style="--d:4"/><path class="d" pathLength="1" d="M876 229.0C1190 229.0 1190 208 1520 208H1600" style="--d:14"/><rect class="fk" x="184" y="231" width="10" height="10"/><path class="d" pathLength="1" d="M200 236C530 236 530 229.0 844 229.0" style="--d:5"/><path class="d" pathLength="1" d="M876 229.0C1190 229.0 1190 236 1520 236H1600" style="--d:15"/><rect class="fk" x="184" y="259" width="10" height="10"/><path class="d" pathLength="1" d="M200 264C530 264 530 299.0 844 299.0" style="--d:6"/><path class="d" pathLength="1" d="M876 299.0C1190 299.0 1190 264 1520 264H1600" style="--d:16"/><rect class="fk" x="184" y="287" width="10" height="10"/><path class="d" pathLength="1" d="M200 292C530 292 530 229.0 844 229.0" style="--d:7"/><path class="d" pathLength="1" d="M876 229.0C1190 229.0 1190 292 1520 292H1600" style="--d:17"/><rect class="fk" x="184" y="315" width="10" height="10"/><path class="d" pathLength="1" d="M200 320C530 320 530 299.0 844 299.0" style="--d:8"/><path class="d" pathLength="1" d="M876 299.0C1190 299.0 1190 320 1520 320H1600" style="--d:18"/><rect class="fr f" x="846" y="215.0" width="28" height="28" style="--d:12"/><rect class="fr f" x="846" y="285.0" width="28" height="28" style="--d:12"/><text class="tr f" x="1624" y="270" style="--d:16">跨行 → 共享模块</text><text class="f" x="860" y="352" text-anchor="middle" style="--d:14">去重</text><text class="ti" x="0" y="470" style="font-size:20px">测量 AFF</text><rect class="fk" x="184" y="403" width="10" height="10"/><line class="d" pathLength="1" x1="200" y1="408" x2="1600" y2="408" style="--d:20"/><rect class="fk" x="184" y="431" width="10" height="10"/><line class="d" pathLength="1" x1="200" y1="436" x2="1600" y2="436" style="--d:21"/><rect class="fk" x="184" y="459" width="10" height="10"/><line class="d" pathLength="1" x1="200" y1="464" x2="1600" y2="464" style="--d:22"/><rect class="fk" x="184" y="487" width="10" height="10"/><line class="d" pathLength="1" x1="200" y1="492" x2="1600" y2="492" style="--d:23"/><rect class="fk" x="184" y="515" width="10" height="10"/><line class="d" pathLength="1" x1="200" y1="520" x2="1600" y2="520" style="--d:24"/><text class="f" x="1624" y="470" style="--d:24">仅行内 → adapter</text><path class="s" d="M0 160H1728M0 352H1728" style="stroke:var(--line);stroke-width:1"/></svg></div>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="slide s-ledger" aria-label="10">
+  <header class="hd" data-r>
+    <div class="kicker">IV — Reconciling Specs</div>
+    <h2 class="title">The Ledger Method</h2>
+  </header>
+  <div class="body">
+    <div class="stack">
+      <p class="lead" data-r>写模块之前，先把抗体、抗原、测量三份清洗规格逐条对照，做成一本台账，每条归入三类之一。</p>
+      <dl class="defs" data-r>
+        <dt><span class="tag ink">重叠</span></dt><dd>不同条目在说同一种操作，合并成共享模块。例如去信号肽、去标签、去恒定区、拆 scFv、判断链类型，都是「定位可变域」。</dd>
+        <dt><span class="tag">冲突</span></dt><dd>两条规则互相矛盾，逐条裁决。</dd>
+        <dt><span class="tag dashed">缺口</span></dt><dd>规格没有覆盖、却必须有人负责的情况，给出默认处理。</dd>
+      </dl>
+      <p data-r>重叠合并后得到 8 个共享模块；冲突和缺口的处理见下一页。</p>
+    </div>
+    <div class="fig" data-fig="ledger" data-r><svg viewBox="-56 0 1176 720" preserveAspectRatio="xMidYMid meet"><text x="64" y="8" text-anchor="end">规格条目</text><text x="490.0" y="8" text-anchor="middle">台账</text><text x="872" y="8">共享模块</text><rect class="k" x="420" y="40" width="140" height="408"/><rect class="r" x="420" y="488" width="140" height="88"/><rect class="s dash" x="420" y="616" width="140" height="88"/><text class="ti" x="420" y="470">重叠 → 合并</text><text class="tr" x="576" y="537.0">冲突 → 裁决</text><text x="576" y="665.0">缺口 → 默认处理</text><text class="ti" x="64" y="31.0" text-anchor="end">字符规范化</text><path class="s d" pathLength="1" d="M72 26.0C246.0 26.0 246.0 58.9 420 58.9H560" style="--d:0"/><path class="d" pathLength="1" d="M560 58.9C716.0 58.9 716.0 56.0 872 56.0" style="--d:12"/><text class="ti" x="64" y="65.5" text-anchor="end">信号肽</text><path class="s d" pathLength="1" d="M72 60.5C246.0 60.5 246.0 80.7 420 80.7H560" style="--d:0"/><path class="d" pathLength="1" d="M560 80.7C716.0 80.7 716.0 108.0 872 108.0" style="--d:13"/><path class="d" pathLength="1" d="M560 80.7C716.0 80.7 716.0 316.0 872 316.0" style="--d:17"/><path class="r d" pathLength="1" d="M72 60.5C246.0 60.5 246.0 494.3 420 494.3" style="--d:4"/><text class="ti" x="64" y="100.0" text-anchor="end">C 端标签</text><path class="s d" pathLength="1" d="M72 95.0C246.0 95.0 246.0 102.4 420 102.4H560" style="--d:1"/><path class="d" pathLength="1" d="M560 102.4C716.0 102.4 716.0 108.0 872 108.0" style="--d:13"/><path class="d" pathLength="1" d="M560 102.4C716.0 102.4 716.0 316.0 872 316.0" style="--d:17"/><path class="r d" pathLength="1" d="M72 95.0C246.0 95.0 246.0 506.9 420 506.9" style="--d:4"/><text class="ti" x="64" y="134.5" text-anchor="end">恒定区</text><path class="s d" pathLength="1" d="M72 129.5C246.0 129.5 246.0 124.2 420 124.2H560" style="--d:1"/><path class="d" pathLength="1" d="M560 124.2C716.0 124.2 716.0 108.0 872 108.0" style="--d:13"/><path class="d" pathLength="1" d="M560 124.2C716.0 124.2 716.0 316.0 872 316.0" style="--d:17"/><path class="r d" pathLength="1" d="M72 129.5C246.0 129.5 246.0 519.4 420 519.4" style="--d:5"/><text class="ti" x="64" y="169.0" text-anchor="end">scFv 拆分</text><path class="s d" pathLength="1" d="M72 164.0C246.0 164.0 246.0 146.0 420 146.0H560" style="--d:2"/><path class="d" pathLength="1" d="M560 146.0C716.0 146.0 716.0 108.0 872 108.0" style="--d:13"/><path class="d" pathLength="1" d="M560 146.0C716.0 146.0 716.0 316.0 872 316.0" style="--d:17"/><path class="r d" pathLength="1" d="M72 164.0C246.0 164.0 246.0 532.0 420 532.0" style="--d:5"/><text class="ti" x="64" y="203.5" text-anchor="end">H/L 栏位</text><path class="s d" pathLength="1" d="M72 198.5C246.0 198.5 246.0 167.8 420 167.8H560" style="--d:2"/><path class="d" pathLength="1" d="M560 167.8C716.0 167.8 716.0 108.0 872 108.0" style="--d:13"/><text class="ti" x="64" y="238.0" text-anchor="end">VHH 判定</text><path class="s d" pathLength="1" d="M72 233.0C246.0 233.0 246.0 189.6 420 189.6H560" style="--d:3"/><path class="d" pathLength="1" d="M560 189.6C716.0 189.6 716.0 108.0 872 108.0" style="--d:13"/><text class="ti" x="64" y="272.5" text-anchor="end">抗体突变</text><path class="s d" pathLength="1" d="M72 267.5C246.0 267.5 246.0 211.3 420 211.3H560" style="--d:3"/><path class="d" pathLength="1" d="M560 211.3C716.0 211.3 716.0 160.0 872 160.0" style="--d:14"/><path class="s dash d" pathLength="1" d="M72 267.5C246.0 267.5 246.0 627.0 420 627.0" style="--d:8"/><text class="ti" x="64" y="307.0" text-anchor="end">抗体结构</text><path class="s d" pathLength="1" d="M72 302.0C246.0 302.0 246.0 233.1 420 233.1H560" style="--d:4"/><path class="d" pathLength="1" d="M560 233.1C716.0 233.1 716.0 212.0 872 212.0" style="--d:15"/><path class="d" pathLength="1" d="M560 233.1C716.0 233.1 716.0 316.0 872 316.0" style="--d:17"/><text class="ti" x="64" y="341.5" text-anchor="end">CDR 补全</text><path class="s d" pathLength="1" d="M72 336.5C246.0 336.5 246.0 254.9 420 254.9H560" style="--d:4"/><path class="d" pathLength="1" d="M560 254.9C716.0 254.9 716.0 160.0 872 160.0" style="--d:14"/><path class="r d" pathLength="1" d="M72 336.5C246.0 336.5 246.0 544.6 420 544.6" style="--d:7"/><text class="ti" x="64" y="376.0" text-anchor="end">非抗体判定</text><path class="s d" pathLength="1" d="M72 371.0C246.0 371.0 246.0 276.7 420 276.7H560" style="--d:5"/><path class="d" pathLength="1" d="M560 276.7C716.0 276.7 716.0 108.0 872 108.0" style="--d:13"/><text class="ti" x="64" y="410.5" text-anchor="end">抗原序列来源</text><path class="s d" pathLength="1" d="M72 405.5C246.0 405.5 246.0 298.4 420 298.4H560" style="--d:5"/><path class="d" pathLength="1" d="M560 298.4C716.0 298.4 716.0 212.0 872 212.0" style="--d:15"/><text class="ti" x="64" y="445.0" text-anchor="end">抗原片段边界</text><path class="s d" pathLength="1" d="M72 440.0C246.0 440.0 246.0 320.2 420 320.2H560" style="--d:6"/><path class="d" pathLength="1" d="M560 320.2C716.0 320.2 716.0 212.0 872 212.0" style="--d:15"/><path class="d" pathLength="1" d="M560 320.2C716.0 320.2 716.0 264.0 872 264.0" style="--d:16"/><text class="ti" x="64" y="479.5" text-anchor="end">多链抗原</text><path class="s d" pathLength="1" d="M72 474.5C246.0 474.5 246.0 342.0 420 342.0H560" style="--d:6"/><path class="d" pathLength="1" d="M560 342.0C716.0 342.0 716.0 264.0 872 264.0" style="--d:16"/><text class="ti" x="64" y="514.0" text-anchor="end">抗原突变</text><path class="s d" pathLength="1" d="M72 509.0C246.0 509.0 246.0 363.8 420 363.8H560" style="--d:7"/><path class="d" pathLength="1" d="M560 363.8C716.0 363.8 716.0 160.0 872 160.0" style="--d:14"/><path class="s dash d" pathLength="1" d="M72 509.0C246.0 509.0 246.0 649.0 420 649.0" style="--d:10"/><text class="ti" x="64" y="548.5" text-anchor="end">证据冲突</text><path class="s d" pathLength="1" d="M72 543.5C246.0 543.5 246.0 385.6 420 385.6H560" style="--d:7"/><path class="d" pathLength="1" d="M560 385.6C716.0 385.6 716.0 264.0 872 264.0" style="--d:16"/><path class="d" pathLength="1" d="M560 385.6C716.0 385.6 716.0 316.0 872 316.0" style="--d:17"/><text class="ti" x="64" y="583.0" text-anchor="end">抗原表示与 ID</text><path class="s d" pathLength="1" d="M72 578.0C246.0 578.0 246.0 407.3 420 407.3H560" style="--d:8"/><path class="d" pathLength="1" d="M560 407.3C716.0 407.3 716.0 56.0 872 56.0" style="--d:12"/><path class="d" pathLength="1" d="M560 407.3C716.0 407.3 716.0 368.0 872 368.0" style="--d:18"/><path class="s dash d" pathLength="1" d="M72 578.0C246.0 578.0 246.0 671.0 420 671.0" style="--d:11"/><text class="ti" x="64" y="617.5" text-anchor="end">跨源合并</text><path class="s dash d" pathLength="1" d="M72 612.5C246.0 612.5 246.0 693.0 420 693.0" style="--d:11"/><text class="ti" x="64" y="652.0" text-anchor="end">重复测量</text><path class="r d" pathLength="1" d="M72 647.0C246.0 647.0 246.0 557.1 420 557.1" style="--d:10"/><text class="ti" x="64" y="686.5" text-anchor="end">ID 方案</text><path class="s d" pathLength="1" d="M72 681.5C246.0 681.5 246.0 429.1 420 429.1H560" style="--d:9"/><path class="d" pathLength="1" d="M560 429.1C716.0 429.1 716.0 368.0 872 368.0" style="--d:18"/><path class="r d" pathLength="1" d="M72 681.5C246.0 681.5 246.0 569.7 420 569.7" style="--d:10"/><path class="dash d" pathLength="1" d="M560 420.0C716.0 420.0 716.0 420.0 872 420.0" style="--d:19"/><g class="f" style="--d:14"><rect class="fk" x="872" y="40" width="248" height="32"/><text x="888" y="61" style="fill:var(--bg);font-size:16px">seqnorm</text><text x="1104" y="61" text-anchor="end" style="fill:var(--mid)">序列规范化</text></g><g class="f" style="--d:15"><rect class="fk" x="872" y="92" width="248" height="32"/><text x="888" y="113" style="fill:var(--bg);font-size:16px">vdomain</text><text x="1104" y="113" text-anchor="end" style="fill:var(--mid)">可变域定位</text></g><g class="f" style="--d:16"><rect class="fk" x="872" y="144" width="248" height="32"/><text x="888" y="165" style="fill:var(--bg);font-size:16px">mutate</text><text x="1104" y="165" text-anchor="end" style="fill:var(--mid)">突变重建</text></g><g class="f" style="--d:17"><rect class="fk" x="872" y="196" width="248" height="32"/><text x="888" y="217" style="fill:var(--bg);font-size:16px">structref</text><text x="1104" y="217" text-anchor="end" style="fill:var(--mid)">结构读取</text></g><g class="f" style="--d:18"><rect class="fk" x="872" y="248" width="248" height="32"/><text x="888" y="269" style="fill:var(--bg);font-size:16px">antigen_bound</text><text x="1104" y="269" text-anchor="end" style="fill:var(--mid)">抗原片段</text></g><g class="f" style="--d:19"><rect class="fk" x="872" y="300" width="248" height="32"/><text x="888" y="321" style="fill:var(--bg);font-size:16px">resolve</text><text x="1104" y="321" text-anchor="end" style="fill:var(--mid)">证据择优</text></g><g class="f" style="--d:20"><rect class="fk" x="872" y="352" width="248" height="32"/><text x="888" y="373" style="fill:var(--bg);font-size:16px">ids</text><text x="1104" y="373" text-anchor="end" style="fill:var(--mid)">ID 生成</text></g><g class="f" style="--d:21"><rect class="fk" x="872" y="404" width="248" height="32"/><text x="888" y="425" style="fill:var(--bg);font-size:16px">lineage</text><text x="1104" y="425" text-anchor="end" style="fill:var(--mid)">来源记录</text></g><text class="tr" x="872" y="476" style="font-size:28px;font-family:var(--serif)">重叠 → 8 个共享模块</text></svg></div>
+  </div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section class="slide s-rule" aria-label="11">
+  <header class="hd" data-r>
+    <div class="kicker">IV — Reconciling Specs</div>
+    <h2 class="title">Conflict Rulings + Gap Handling</h2>
+  </header>
+  <div class="body split dense">
+    <div data-r>
+      <div class="sub">Conflict Rulings</div>
+      <div class="items">
+        <div class="item">
+          <div class="fig" data-fig="c-order"><svg viewBox="0 0 200 128" preserveAspectRatio="xMidYMid meet">
+  <circle class="r dash d" pathLength="1" cx="44" cy="64" r="32" style="--d:0"/>
+  <rect class="fr" x="40" y="28" width="8" height="8"/><rect class="fr" x="9" y="76" width="8" height="8"/><rect class="fr" x="71" y="76" width="8" height="8"/>
+  <path class="s" d="M90 64H106M101 59L106 64L101 69"/>
+  <line class="d" pathLength="1" x1="116" y1="64" x2="196" y2="64" style="--d:4"/>
+  <g class="f" style="--d:8"><rect class="fk" x="124" y="56" width="24" height="16"/><rect class="fk" x="164" y="56" width="24" height="16"/></g>
+  <text x="156" y="100" text-anchor="middle">一次找全区间</text>
+</svg></div>
+          <div><h4>scFv 先拆，还是先裁两端</h4><p>两条规则对顺序的要求正好相反。我们改为一次找出序列里全部可变域区间，信号肽、标签、恒定区、linker 都是区间之外的部分，顺序问题随之消失。</p></div>
+        </div>
+        <div class="item">
+          <div class="fig" data-fig="c-dedup"><svg viewBox="0 0 200 128" preserveAspectRatio="xMidYMid meet">
+  <g class="f" style="--d:0"><line class="r dash" x1="14" y1="34" x2="64" y2="26"/><line class="r dash" x1="14" y1="34" x2="24" y2="96"/><line class="r dash" x1="14" y1="34" x2="70" y2="90"/><line class="r dash" x1="64" y1="26" x2="24" y2="96"/><line class="r dash" x1="64" y1="26" x2="70" y2="90"/><line class="r dash" x1="24" y1="96" x2="70" y2="90"/><rect class="fk" x="10" y="30" width="8" height="8"/><rect class="fk" x="60" y="22" width="8" height="8"/><rect class="fk" x="20" y="92" width="8" height="8"/><rect class="fk" x="66" y="86" width="8" height="8"/></g>
+  <path class="s" d="M90 64H106M101 59L106 64L101 69"/>
+  <path class="d" pathLength="1" d="M118 40V96H150V40M162 40V96H194V40" style="--d:4"/>
+  <g class="f" style="--d:8"><rect class="fk" x="124" y="84" width="8" height="8"/><rect class="fk" x="136" y="84" width="8" height="8"/><rect class="fk" x="124" y="72" width="8" height="8"/><rect class="fk" x="174" y="84" width="8" height="8"/></g>
+  <text x="156" y="118" text-anchor="middle">按 3A_ID 追加</text>
+</svg></div>
+          <div><h4>合并时要不要判定重复测量</h4><p>同一测量常被多个数据集转载，单位、舍入各不相同，无法可靠判等。裁决：不判定，不去重，每条测量带着来源记录追加进 affinity[]，由下游决定。</p></div>
+        </div>
+        <div class="item">
+          <div class="fig" data-fig="c-isolate"><svg viewBox="0 0 200 128" preserveAspectRatio="xMidYMid meet">
+  <path class="s d" pathLength="1" d="M40 64H96M104 64H160" style="--d:0"/>
+  <g class="f" style="--d:4"><path class="r w" d="M62 48L74 80M126 48L138 80"/></g>
+  <rect class="k w" x="16" y="52" width="24" height="24" fill="var(--bg)"/><rect class="s dash f" x="6" y="42" width="44" height="44" style="--d:8"/><rect class="k w" x="88" y="52" width="24" height="24" fill="var(--bg)"/><rect class="s dash f" x="78" y="42" width="44" height="44" style="--d:8"/><rect class="k w" x="160" y="52" width="24" height="24" fill="var(--bg)"/><rect class="s dash f" x="150" y="42" width="44" height="44" style="--d:8"/>
+  <text x="100" y="112" text-anchor="middle">各自单独重跑</text>
+</svg></div>
+          <div><h4>来源之间的依赖</h4><p>补全只有 CDR 的数据时，规格允许去别的来源的处理结果里找 parent，来源之间因此要排队。裁决：切断依赖，每个来源只用自己的数据和明确引用的公开结构，可以单独重跑。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="vrule" data-r></div>
+    <div data-r>
+      <div class="sub">Gap Handling</div>
+      <div class="grid2">
+        <div>
+          <div class="fig" data-fig="g-assign"><svg viewBox="0 0 380 192" preserveAspectRatio="xMidYMid meet">
+  <text x="0" y="100">突变</text>
+  <path class="d" pathLength="1" d="M80 96H170" style="--d:0"/>
+  <path class="r w d" pathLength="1" d="M170 96C210 96 210 40 250 40H292" style="--d:3"/>
+  <path class="s dash d" pathLength="1" d="M170 96C210 96 210 152 250 152H292" style="--d:3"/>
+  <rect class="fr f" x="186" y="66" width="10" height="10" style="--d:6"/>
+  <rect class="k" x="292" y="26" width="64" height="28"/><text class="ti" x="324" y="45" text-anchor="middle">抗体</text>
+  <rect class="s" x="292" y="138" width="64" height="28"/><text x="324" y="157" text-anchor="middle">抗原</text>
+  <text x="170" y="122" text-anchor="middle">adapter</text>
+  <text class="tr f" x="0" y="160" style="--d:8;font-size:20px">恰好用一次</text>
+</svg></div>
+          <div><h4>突变属于哪一侧</h4><p>两份规格都要求先判断，却没指定由谁做。现在由 adapter 按链字段分发到抗体或抗原侧，汇合时检查每个突变恰好被用一次。</p></div>
+        </div>
+        <div>
+          <div class="fig" data-fig="g-multi"><svg viewBox="0 0 380 192" preserveAspectRatio="xMidYMid meet">
+  <rect class="s dash f" x="94" y="116" width="150" height="64" fill="var(--bg)" style="--d:1"/><rect class="s dash f" x="76" y="96" width="150" height="64" fill="var(--bg)" style="--d:2"/><rect class="s dash f" x="58" y="76" width="150" height="64" fill="var(--bg)" style="--d:3"/>
+  <rect class="k w f" x="40" y="36" width="150" height="64" fill="var(--bg)" style="--d:5"/>
+  <text class="ti f" x="56" y="74" style="--d:5">优先级最高</text>
+  <path class="r d" pathLength="1" d="M190 68H260" style="--d:7"/><text class="tr f" x="268" y="73" style="--d:8">选为结构</text>
+  <path class="s dash" d="M244 140H300"/><text x="308" y="145">来源记录</text>
+</svg></div>
+          <div><h4>一个抗原，多个结构</h4><p>模型里结构只有一个位置。按来源优先级取一个，同级按 ID 字典序，其余写进来源记录。</p></div>
+        </div>
+        <div>
+          <div class="fig" data-fig="g-pointer"><svg viewBox="0 0 380 192" preserveAspectRatio="xMidYMid meet">
+  <rect class="k w" x="0" y="44" width="200" height="104"/>
+  <text class="ti" x="16" y="76">structure_id</text><text class="ti" x="16" y="102">file_ref</text><text class="ti" x="16" y="128">chain_map</text>
+  <path class="r d" pathLength="1" d="M112 98H260M250 90L260 98L250 106" style="--d:2"/>
+  <path class="k" d="M276 52H340L356 68V148H276Z M340 52V68H356"/>
+  <path class="s" d="M288 84H344M288 100H344M288 116H344M288 132H328"/>
+  <text x="316" y="176" text-anchor="middle">.cif</text>
+  <text x="100" y="176" text-anchor="middle">不复制坐标</text>
+</svg></div>
+          <div><h4>结构怎么存</h4><p>只存指针：结构 ID、文件位置和链映射，不复制坐标。</p></div>
+        </div>
+        <div>
+          <div class="fig" data-fig="g-trim"><svg viewBox="0 0 380 192" preserveAspectRatio="xMidYMid meet">
+  <text x="0" y="56">parent</text><text x="0" y="120">突变体</text>
+  <path class="s dash" d="M80 52H140M80 116H140"/>
+  <path class="w d" pathLength="1" d="M140 52H300M140 116H300" style="--d:0"/>
+  <rect class="fr" x="104" y="104" width="8" height="24"/>
+  <rect class="fs f" x="76" y="32" width="68" height="104" style="--d:3;opacity:.25"/>
+  <text x="110" y="160" text-anchor="middle">被裁掉</text>
+  <path class="d" pathLength="1" d="M300 52C330 52 330 84 352 84M300 116C330 116 330 84 352 84" style="--d:5"/>
+  <text class="tr f" x="380" y="154" text-anchor="end" style="--d:8">同一个 AB_ID</text>
+  <rect class="fr f" x="352" y="78" width="12" height="12" style="--d:8"/>
+</svg></div>
+          <div><h4>突变落在被裁掉的区段</h4><p>例如突变在信号肽或标签里。裁剪后与 parent 完全相同，自然得到同一个 ID，位点写进来源记录。</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section class="slide s-mod" aria-label="12">
+  <header class="hd" data-r>
+    <div class="kicker">V — Module Design</div>
+    <h2 class="title">Eight Shared Modules</h2>
+  </header>
+  <p class="lead intro" data-r>台账合并出 8 个共享模块。每个模块只做一类事，所有来源共用；红线表示模块之间的调用。</p>
+  <div class="body">
+    <div class="cell" data-r><div class="mn">seqnorm</div><div class="role">序列规范化</div><p class="io">原始字符串 → 规范序列：统一大写、去空白，标出 gap 和非法字符，不可用则判为空。</p></div>
+    <div class="cell" data-r><div class="mn">vdomain</div><div class="role">可变域定位</div><p class="io">序列 → 全部可变域区间及链类型；信号肽、标签、恒定区、linker 由区间之外得出。合并了 7 条规则。</p></div>
+    <div class="cell" data-r><div class="mn">mutate</div><div class="role">突变重建</div><p class="io">parent + 突变列表 → 突变体序列，无法唯一重建时给出原因。抗体、抗原两侧共用。</p></div>
+    <div class="cell" data-r><div class="mn">structref</div><div class="role">结构读取</div><p class="io">结构 ID + 链 → 链序列、实际观察到的残基与编号。</p></div>
+    <div class="cell" data-r><div class="mn">antigen_bound</div><div class="role">抗原片段</div><p class="io">抗原链候选 + 构建体说明 → 实验实际使用的有序链列表。</p></div>
+    <div class="cell" data-r><div class="mn">resolve</div><div class="role">证据择优</div><p class="io">多个候选 + 优先级 → 选中项、全部候选与冲突标记。各处「来源 &gt; 结构 &gt; 工具 &gt; 兜底」都用它。</p></div>
+    <div class="cell" data-r><div class="mn">ids</div><div class="role">ID 生成</div><p class="io">规范序列 → <code>AB_ID</code>、<code>AG_ID</code>、<code>3A_ID</code>，并做碰撞检查。</p></div>
+    <div class="cell" data-r><div class="mn">lineage</div><div class="role">来源记录</div><p class="io">键值 → <code>key=value | …</code> 格式的来源记录，所有模块共用。</p></div>
+    <div class="fig calls" data-fig="calls" aria-hidden="true"><svg></svg></div>
+  </div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section class="slide s-vd" aria-label="13">
+  <header class="hd" data-r>
+    <div class="kicker">V — Module Design</div>
+    <h2 class="title">vdomain: Intervals as Output</h2>
+  </header>
+  <div class="body dense">
+    <p class="lead" data-r>可变域定位只输出一样东西：可变域在序列里的区间。信号肽、标签、恒定区、linker 都在区间之外，由区间推出，不存在先后顺序。</p>
+    <div class="fig" data-fig="beads" data-r></div>
+    <div class="lower">
+      <div class="cases">
+        <div data-r><div class="k">0</div><div class="fig" data-fig="v0"><svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet">
+  <rect class="s dash" x="10" y="60" width="8" height="16"/><rect class="s dash" x="22" y="60" width="8" height="16"/><rect class="s dash" x="34" y="60" width="8" height="16"/><rect class="s dash" x="46" y="60" width="8" height="16"/><rect class="s dash" x="58" y="60" width="8" height="16"/><rect class="s dash" x="70" y="60" width="8" height="16"/><rect class="s dash" x="82" y="60" width="8" height="16"/><rect class="s dash" x="94" y="60" width="8" height="16"/><rect class="s dash" x="106" y="60" width="8" height="16"/><rect class="s dash" x="118" y="60" width="8" height="16"/><rect class="s dash" x="130" y="60" width="8" height="16"/><rect class="s dash" x="142" y="60" width="8" height="16"/><rect class="s dash" x="154" y="60" width="8" height="16"/><rect class="s dash" x="166" y="60" width="8" height="16"/><rect class="s dash" x="178" y="60" width="8" height="16"/><rect class="s dash" x="190" y="60" width="8" height="16"/><rect class="s dash" x="202" y="60" width="8" height="16"/><rect class="s dash" x="214" y="60" width="8" height="16"/><rect class="s dash" x="226" y="60" width="8" height="16"/><rect class="s dash" x="238" y="60" width="8" height="16"/>
+  <line class="r d" pathLength="1" x1="4" y1="68" x2="254" y2="68" style="--d:2"/>
+  <text class="" x="130" y="104" text-anchor="middle">无区间</text>
+</svg></div><p>找不到可变域：不是抗体或无法定位，排除。</p></div>
+        <div data-r><div class="k">1</div><div class="fig" data-fig="v1"><svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet">
+  <rect class="fs f" x="10" y="60" width="8" height="16" style="--d:0"/><rect class="fs f" x="22" y="60" width="8" height="16" style="--d:0"/><rect class="fs f" x="34" y="60" width="8" height="16" style="--d:0"/><rect class="fs f" x="46" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="58" y="60" width="8" height="16" style="--d:2"/><rect class="fr f" x="70" y="60" width="8" height="16" style="--d:2"/><rect class="fr f" x="82" y="60" width="8" height="16" style="--d:2"/><rect class="fr f" x="94" y="60" width="8" height="16" style="--d:2"/><rect class="fr f" x="106" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="118" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="130" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="142" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="154" y="60" width="8" height="16" style="--d:4"/><rect class="fr f" x="166" y="60" width="8" height="16" style="--d:4"/><rect class="fs f" x="178" y="60" width="8" height="16" style="--d:5"/><rect class="fs f" x="190" y="60" width="8" height="16" style="--d:5"/><rect class="fs f" x="202" y="60" width="8" height="16" style="--d:5"/><rect class="fs f" x="214" y="60" width="8" height="16" style="--d:5"/><rect class="fs f" x="226" y="60" width="8" height="16" style="--d:6"/><rect class="fs f" x="238" y="60" width="8" height="16" style="--d:6"/><rect class="fs f" x="250" y="60" width="8" height="16" style="--d:6"/>
+  <text class="" x="32" y="104" text-anchor="middle">信号肽</text><text class="tr" x="116" y="104" text-anchor="middle">VH / VL</text><text class="" x="214" y="104" text-anchor="middle">标签 · 恒定区</text>
+</svg></div><p>单个 VH、VHH 或 VL。左侧残余归为信号肽或标签，右侧归为标签或恒定区。</p></div>
+        <div data-r><div class="k">2</div><div class="fig" data-fig="v2"><svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet">
+  <rect class="fr f" x="10" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="22" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="34" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="46" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="58" y="60" width="8" height="16" style="--d:1"/><rect class="fr f" x="70" y="60" width="8" height="16" style="--d:1"/><rect class="fr f" x="82" y="60" width="8" height="16" style="--d:1"/><rect class="fr f" x="94" y="60" width="8" height="16" style="--d:1"/><rect class="fs f" x="106" y="60" width="8" height="16" style="--d:2"/><rect class="fs f" x="118" y="60" width="8" height="16" style="--d:2"/><rect class="fs f" x="130" y="60" width="8" height="16" style="--d:2"/><rect class="fs f" x="142" y="60" width="8" height="16" style="--d:2"/><rect class="fr f" x="154" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="166" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="178" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="190" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="202" y="60" width="8" height="16" style="--d:4"/><rect class="fr f" x="214" y="60" width="8" height="16" style="--d:4"/><rect class="fr f" x="226" y="60" width="8" height="16" style="--d:4"/><rect class="fr f" x="238" y="60" width="8" height="16" style="--d:4"/>
+  <text class="tr" x="52" y="104" text-anchor="middle">VL</text><text class="" x="128" y="104" text-anchor="middle">linker</text><text class="tr" x="200" y="104" text-anchor="middle">VH</text>
+  <path class="r d" pathLength="1" d="M52 52C52 12 200 12 200 52M194 44L200 52L206 44" style="--d:6"/>
+  <path class="r dash d" pathLength="1" d="M200 112C200 140 52 140 52 112M46 120L52 112L58 120" style="--d:7"/>
+</svg></div><p>一条重链加一条轻链才算 scFv，中间须是合格的 linker。VL-linker-VH 方向互换后写入。</p></div>
+        <div data-r><div class="k">≥</div><div class="fig" data-fig="v3"><svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet">
+  <rect class="fr f" x="10" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="22" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="34" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="46" y="60" width="8" height="16" style="--d:0"/><rect class="fr f" x="58" y="60" width="8" height="16" style="--d:1"/><rect class="fr f" x="70" y="60" width="8" height="16" style="--d:1"/><rect class="fr f" x="82" y="60" width="8" height="16" style="--d:1"/><rect class="fs f" x="94" y="60" width="8" height="16" style="--d:2"/><rect class="fs f" x="106" y="60" width="8" height="16" style="--d:2"/><rect class="fs f" x="118" y="60" width="8" height="16" style="--d:2"/><rect class="fr f" x="130" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="142" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="154" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="166" y="60" width="8" height="16" style="--d:3"/><rect class="fr f" x="178" y="60" width="8" height="16" style="--d:4"/><rect class="fr f" x="190" y="60" width="8" height="16" style="--d:4"/><rect class="fr f" x="202" y="60" width="8" height="16" style="--d:4"/>
+  <rect class="r dash" x="6" y="54" width="248" height="28"/>
+  <text class="tr" x="46" y="104" text-anchor="middle">VH</text><text class="tr" x="170" y="104" text-anchor="middle">VH</text><text class="tr" x="236" y="104" text-anchor="middle">?</text>
+</svg></div><p>两个同类区间或三个以上：不强行凑成一对，排除。</p></div>
+      </div>
+      <div class="slotwrap" data-r>
+      <p>来源的重链栏、轻链栏本身也可能填错：</p>
+      <div class="fig" data-fig="slots"><svg viewBox="0 0 560 400" preserveAspectRatio="xMidYMid meet"><rect class="fk" x="0" y="172" width="148" height="40"/><text x="74" y="197" text-anchor="middle" style="fill:var(--bg);font-size:13px">重链栏 h · 轻链栏 l</text><path class="d" pathLength="1" d="M148 192H172V48H196" style="--d:0"/><text class="ti f" x="208" y="44" style="--d:2">h ≠ l</text><text class="f" x="208" y="64" style="--d:2">都不是完整 scFv</text><path class=" d" pathLength="1" d="M372 48H404" style="--d:4"/><g class="f" style="--d:6"><rect class="k" x="404" y="32" width="156" height="32"/><text class="ti" x="482" y="53" text-anchor="middle">逐链处理</text></g><path class="d" pathLength="1" d="M148 192H172V144H196" style="--d:1"/><text class="ti f" x="208" y="140" style="--d:3">h = l</text><text class="f" x="208" y="160" style="--d:3">且无 linker</text><path class="r d" pathLength="1" d="M372 144H404" style="--d:5"/><g class="f" style="--d:7"><rect class="r" x="404" y="128" width="156" height="32"/><text class="tr" x="482" y="149" text-anchor="middle">填错，排除</text></g><path class="d" pathLength="1" d="M148 192H172V240H196" style="--d:2"/><text class="ti f" x="208" y="236" style="--d:4">h = l + linker</text><text class="f" x="208" y="256" style="--d:4">或只填一栏且为完整 scFv</text><path class=" d" pathLength="1" d="M372 240H404" style="--d:6"/><g class="f" style="--d:8"><rect class="k" x="404" y="224" width="156" height="32"/><text class="ti" x="482" y="245" text-anchor="middle">按一条 scFv 拆分</text></g><path class="d" pathLength="1" d="M148 192H172V336H196" style="--d:3"/><text class="ti f" x="208" y="332" style="--d:5">h ≠ l</text><text class="f" x="208" y="352" style="--d:5">但标注可疑</text><path class="r d" pathLength="1" d="M372 336H404" style="--d:7"/><g class="f" style="--d:9"><rect class="r" x="404" y="320" width="156" height="32"/><text class="tr" x="482" y="341" text-anchor="middle">确认 H + L 才互换</text></g><text class="f" x="482" y="376" text-anchor="middle" style="--d:10">否则排除</text></svg></div>
+      <p>VHH 与其他只有重链的抗体统一写成 VH，轻链为空，类型只记在来源记录里。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 ============ -->
+<section class="slide s-mr" aria-label="14">
+  <header class="hd" data-r>
+    <div class="kicker">V — Module Design</div>
+    <h2 class="title">mutate and resolve</h2>
+  </header>
+  <div class="body dense">
+    <div class="half" data-r>
+      <div class="sig">mutate · 突变重建</div>
+      <ul class="list">
+        <li>很多数据只给 parent 和突变名（如 S31A），突变体序列要自己重建。</li>
+        <li><code>point</code>：突变能唯一定位到 parent 上，且该位置的原残基与突变名一致，才接受。对不上就不猜，排除并记下原因。</li>
+        <li><code>region</code>：只给了 CDR 片段时，在 parent 上按 IMGT 编号整段替换该区间，检查两侧框架和总长度，另一条链不变。</li>
+      </ul>
+      <div class="fig" data-fig="mutate"><svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet"><text class="ti" x="0" y="16">point</text><rect class="fk" x="40" y="112" width="10" height="10"/><rect class="fk" x="60" y="112" width="10" height="10"/><rect class="fk" x="80" y="112" width="10" height="10"/><rect class="fk" x="100" y="112" width="10" height="10"/><rect class="fk" x="120" y="112" width="10" height="10"/><rect class="fk" x="140" y="112" width="10" height="10"/><rect class="fk" x="160" y="112" width="10" height="10"/><rect class="fk" x="180" y="112" width="10" height="10"/><rect class="fk" x="200" y="112" width="10" height="10"/><rect class="fk" x="220" y="112" width="10" height="10"/><rect class="fk" x="240" y="112" width="10" height="10"/><rect class="fk" x="260" y="112" width="10" height="10"/><rect class="fk" x="280" y="112" width="10" height="10"/><rect class="fk" x="300" y="112" width="10" height="10"/><rect class="fk" x="320" y="112" width="10" height="10"/><rect class="fk" x="340" y="112" width="10" height="10"/><rect class="fk" x="360" y="112" width="10" height="10"/><rect class="fk" x="380" y="112" width="10" height="10"/><rect class="fk" x="400" y="112" width="10" height="10"/><rect class="fk" x="420" y="112" width="10" height="10"/><rect class="fk" x="440" y="112" width="10" height="10"/><rect class="fk" x="460" y="112" width="10" height="10"/><rect class="fk" x="480" y="112" width="10" height="10"/><rect class="fk" x="500" y="112" width="10" height="10"/><rect class="fk" x="520" y="112" width="10" height="10"/><rect class="fk" x="540" y="112" width="10" height="10"/><rect class="fk" x="560" y="112" width="10" height="10"/><rect class="fk" x="580" y="112" width="10" height="10"/><rect class="fk" x="600" y="112" width="10" height="10"/><rect class="fk" x="620" y="112" width="10" height="10"/><rect class="fk" x="640" y="112" width="10" height="10"/><rect class="fk" x="660" y="112" width="10" height="10"/><rect class="fk" x="680" y="112" width="10" height="10"/><rect class="fk" x="700" y="112" width="10" height="10"/><rect class="fk" x="720" y="112" width="10" height="10"/><rect class="fk" x="740" y="112" width="10" height="10"/><path class="w d" pathLength="1" d="M165 48V106" style="--d:2"/><rect class="fk f" x="160" y="38" width="10" height="10" style="--d:2"/><text class="f" x="165" y="28" text-anchor="middle" style="--d:2">S31A</text><path class="w d" pathLength="1" d="M305 48V106" style="--d:3"/><rect class="fk f" x="300" y="38" width="10" height="10" style="--d:3"/><text class="f" x="305" y="28" text-anchor="middle" style="--d:3">Y52F</text><g class="f" style="--d:6"><path class="r w" d="M471 40L485 92"/><rect class="fr" x="467" y="30" width="10" height="10"/><text class="tr" x="493" y="40">D56N · 原残基不符</text></g><path class="w d" pathLength="1" d="M625 48V106" style="--d:5"/><rect class="fk f" x="620" y="38" width="10" height="10" style="--d:5"/><text class="f" x="625" y="28" text-anchor="middle" style="--d:5">W103R</text><text x="40" y="150">唯一定位且原残基一致，才接受</text><text class="ti" x="0" y="216">region</text><text x="0" y="268">VH</text><line class="s" x1="40" y1="264" x2="260" y2="264"/><line class="s" x1="420" y1="264" x2="760" y2="264"/><line class="s dash" x1="260" y1="264" x2="420" y2="264"/><path class="w d" pathLength="1" d="M180 264H260M420 264H500" style="--d:4;stroke-width:5"/><rect class="fr f" x="260" y="250" width="160" height="28" style="--d:7"/><text class="tr f" x="340.0" y="236" text-anchor="middle" style="--d:7">IMGT 区间整段替换</text><text class="f" x="220" y="300" text-anchor="middle" style="--d:5">框架校验 ✓</text><text class="f" x="460" y="300" text-anchor="middle" style="--d:5">框架校验 ✓</text><text x="0" y="356">VL</text><line class="s" x1="40" y1="352" x2="760" y2="352"/><text x="760" y="384" text-anchor="end">保持不变</text></svg></div>
+    </div>
+    <div class="vrule" data-r></div>
+    <div class="half" data-r>
+      <div class="sig">resolve · 证据择优</div>
+      <ul class="list">
+        <li>同一个值常有几份候选。所有模块按同一顺序取：来源 &gt; 结构 &gt; 工具 &gt; 兜底。</li>
+        <li>同级候选不一致时，由调用方指定策略：<code>pick_top</code> 取第一个并记录冲突；<code>reject</code> 直接排除；<code>tie-break</code> 用额外规则定胜负，例如拆 scFv 时选两侧可变域都完整、剩余片段最短的切法。</li>
+        <li>落选的候选不丢，全部写进来源记录。</li>
+      </ul>
+      <div class="fig" data-fig="resolve"><svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet"><rect class="k w" x="0" y="40" width="168" height="52" fill="var(--bg)"/><text class="ti" x="16" y="71">来源</text><text x="152" y="71" text-anchor="end">1</text><path class="s d" pathLength="1" d="M168 66C224 66 224 200 268 200" style="--d:0"/><rect class="k" x="0" y="132" width="168" height="52" fill="var(--bg)"/><text class="ti" x="16" y="163">结构</text><text x="152" y="163" text-anchor="end">2</text><path class="s d" pathLength="1" d="M168 158C224 158 224 200 268 200" style="--d:1"/><rect class="k" x="0" y="224" width="168" height="52" fill="var(--bg)"/><text class="ti" x="16" y="255">工具</text><text x="152" y="255" text-anchor="end">3</text><path class="s d" pathLength="1" d="M168 250C224 250 224 200 268 200" style="--d:2"/><rect class="k" x="0" y="316" width="168" height="52" fill="var(--bg)"/><text class="ti" x="16" y="347">兜底</text><text x="152" y="347" text-anchor="end">4</text><path class="s d" pathLength="1" d="M168 342C224 342 224 200 268 200" style="--d:3"/><g class="f" style="--d:5"><rect class="fk" x="268" y="160" width="196" height="80"/><text x="366" y="196" text-anchor="middle" style="fill:var(--bg);font-size:18px">resolve</text><text x="366" y="220" text-anchor="middle" style="fill:var(--mid)">优先级 · 平局策略</text></g><path class="k d" pathLength="1" d="M464 200C512 200 512 72 560 72" style="--d:7"/><g class="f" style="--d:9"><text class="ti" x="572" y="66" style="font-size:16px">pick_top</text><text x="572" y="88">取第一个，冲突写入来源记录</text></g><path class="r d" pathLength="1" d="M464 200C512 200 512 200 560 200" style="--d:8"/><g class="f" style="--d:10"><text class="tr" x="572" y="194" style="font-size:16px">reject</text><text x="572" y="216">平局即排除</text></g><path class="k d" pathLength="1" d="M464 200C512 200 512 328 560 328" style="--d:9"/><g class="f" style="--d:11"><text class="ti" x="572" y="322" style="font-size:16px">tie-break</text><text x="572" y="344">平局交给额外规则</text></g></svg></div>
+    </div>
+  </div>
+  <div class="fig coda" data-fig="coda"><svg viewBox="0 0 128 128"><path class="r d" pathLength="1" d="M64 12L113 98H15Z" style="--d:12"/><g class="f" style="--d:16"><rect class="fr" x="60" y="8" width="8" height="8"/><rect class="fr" x="109" y="94" width="8" height="8"/><rect class="fr" x="11" y="94" width="8" height="8"/></g></svg></div>
+</section>
+
+</main>
+
+<script>
+// Deck navigation. Scenes hook in via the "slide" event: document.addEventListener('slide', e => e.detail.index)
+// Module scripts load after this, so on init they should read the active slide: document.querySelector('.slide.is-active')
+(() => {
+  const deck = document.getElementById('deck');
+  const slides = [...deck.querySelectorAll('.slide')];
+  const N = slides.length;
+  const pageno = document.getElementById('pageno');
+  const bar = document.getElementById('progress');
+  const pad = n => String(n).padStart(2, '0');
+  let cur = -1;
+
+  if (new URLSearchParams(location.search).has('t')) document.documentElement.classList.add('still');
+  slides.forEach(s => s.querySelectorAll('[data-r]').forEach((e, i) => e.style.setProperty('--i', i)));
+
+  const fit = () => deck.style.setProperty('--s', Math.min(innerWidth / 1920, innerHeight / 1080));
+
+  function go(i) {
+    i = Math.max(0, Math.min(N - 1, i));
+    if (i === cur) return;
+    slides[cur]?.classList.remove('is-active');
+    slides[i].classList.add('is-active');
+    cur = i;
+    pageno.textContent = `${pad(i + 1)} / ${pad(N)}`;
+    bar.style.transform = `scaleX(${(i + 1) / N})`;
+    history.replaceState(null, '', `#${i + 1}`);
+    document.dispatchEvent(new CustomEvent('slide', { detail: { index: i, el: slides[i] } }));
+  }
+
+  addEventListener('keydown', e => {
+    const k = e.key;
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); go(cur + 1); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); go(cur - 1); }
+    else if (k === 'Home') go(0);
+    else if (k === 'End') go(N - 1);
+    else if (k === 'f') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  });
+  addEventListener('resize', fit);
+
+  fit();
+  go((parseInt(location.hash.slice(1), 10) || 1) - 1);
+})();
+</script>
+
+<script>
+// 12 · call lines between module cells, laid out from the cells' measured boxes (stage is fixed 1920×1080)
+(() => {
+  const body = document.querySelector('.s-mod .body'), svg = body.querySelector('.calls svg');
+  const cell = n => [...body.querySelectorAll('.cell')].find(e => e.querySelector('.mn').textContent === n);
+  const B = n => { const e = cell(n); return { x: e.offsetLeft, y: e.offsetTop, w: e.offsetWidth, h: e.offsetHeight }; };
+  const v = B('vdomain'), m = B('mutate'), sr = B('structref'), ab = B('antigen_bound'), r = B('resolve');
+  const Y = c => c.y + c.h - 44;                        // the empty band below the io text
+  const head = (x, y, dx, dy) => `M${x - 10 * dx - 6 * dy} ${y - 10 * dy - 6 * dx}L${x} ${y}L${x - 10 * dx + 6 * dy} ${y - 10 * dy + 6 * dx}`;
+  const line = (d, k, extra = '') => `<path class="r d ${extra}" pathLength="1" d="${d}" style="--d:${k}"/>`;
+  const txt = (x, y, t, k, a = 'start') => `<text class="tr f" x="${x}" y="${y}" text-anchor="${a}" style="--d:${k}">${t}</text>`;
+  svg.setAttribute('viewBox', `0 0 ${body.clientWidth} ${body.clientHeight}`);
+  const vx = v.x + v.w * .62, sx = sr.x + sr.w * .78, ys = Y(sr) + 24;
+  svg.innerHTML = [
+    // mutate(region) → vdomain: parent numbering
+    line(`M${m.x + 120} ${Y(m)}H${v.x + v.w - 40}`, 10, 'w'), `<path class="r w f" d="${head(v.x + v.w - 40, Y(m), -1, 0)}" style="--d:12"/>`,
+    txt(m.x + 24, Y(m) - 14, '区间替换前先编号', 12),
+    // three call sites → resolve
+    line(`M${vx} ${Y(v)}V${r.y + 24}`, 14), `<path class="r f" d="${head(vx, r.y + 24, 0, 1)}" style="--d:16"/>`,
+    txt(vx - 16, Y(v) + 24, '取最高 + 平局规则', 16, 'end'),
+    // structref runs under the mutate line, then elbows down into resolve's top-right corner
+    line(`M${sx} ${ys}H${r.x + r.w + 64}C${r.x + r.w - 24} ${ys} ${r.x + r.w - 24} ${ys} ${r.x + r.w - 24} ${r.y + 40}`, 15),
+    `<path class="r f" d="${head(r.x + r.w - 24, r.y + 40, 0, 1)}" style="--d:17"/>`, txt(sx - 16, ys - 14, '取最高', 17, 'end'),
+    line(`M${ab.x + ab.w - 120} ${Y(ab)}H${r.x + 24}`, 16), `<path class="r f" d="${head(r.x + 24, Y(ab), 1, 0)}" style="--d:18"/>`,
+    txt(ab.x + ab.w - 120, Y(ab) - 14, '平局即排除', 18),
+    `<rect class="r f" x="${r.x + 6}" y="${r.y + 6}" width="${r.w - 12}" height="${r.h - 12}" style="--d:19;stroke-width:3"/>`,
+  ].join('');
+})();
+</script>
+<script type="module">
+// three.js scenes. One rAF loop; a scene renders only while its slide is active, and its clock restarts on each entry.
+import * as THREE from 'three';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = x => Math.min(Math.max(x, 0), 1);
+const ease = x => 1 - Math.pow(1 - clamp(x), 4);
+const INK = 0x0B0F13, RED = 0xCD2626, MID = 0xA9B4C0, LINE = 0xD6DEEA, SOFT = 0x697580, BG = 0xF8FBFF;
+const live = [];
+const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const lineMat = (color, opts = {}) => new THREE.LineBasicMaterial({ color, ...opts });
+const geo = pts => new THREE.BufferGeometry().setFromPoints(pts);
+
+function mount(name, build) {
+  const host = document.querySelector(`[data-fig="${name}"]`);
+  const w = host.clientWidth, h = host.clientHeight;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(w, h, false);
+  host.prepend(renderer.domElement);
+  const cam = new THREE.OrthographicCamera(-w / 2, w / 2, h / 2, -h / 2, -5000, 5000);
+  const scene = new THREE.Scene();
+  const ctx = {
+    w, h, cam, scene,
+    label(text, cls = '') { const d = document.createElement('div'); d.className = 'lbl ' + cls; d.textContent = text; host.append(d); return d; },
+    place(el, v) { const p = v.clone().project(cam); el.style.transform = `translate(${(p.x + 1) / 2 * w}px, ${(1 - p.y) / 2 * h}px)`; },
+  };
+  live.push({ slide: host.closest('.slide'), renderer, ctx, update: build(ctx), t0: null });
+}
+
+/* 01 · scattered records converge into the 3A triangle */
+mount('cover', ({ w, h, scene, label, place }) => {
+  const N = 4200, R = 270;
+  const tri = new THREE.Group(); tri.position.set(w * 0.2, 40, 0); scene.add(tri);
+  const V = [0, 1, 2].map(i => { const a = Math.PI / 2 + i * 2 * Math.PI / 3; return v3(Math.cos(a) * R, Math.sin(a) * R, 0); });
+  tri.add(new THREE.LineLoop(geo(V), lineMat(RED)));
+  tri.add(new THREE.Points(geo(V), new THREE.PointsMaterial({ color: RED, size: 12, sizeAttenuation: false })));
+  const names = ['antibody', 'antigen', 'affinity[]'].map(t => label(t, 'r'));
+
+  // each point: a cloud origin (gaussian blob, upper left, clear of the title), a target on a triangle edge, a convergence weight
+  const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+  const src = new Float32Array(N * 3), tgt = [], wt = new Float32Array(N), bend = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    src.set([-w * .27 + gauss() * w * .24, h * .17 + gauss() * h * .2, gauss() * 300], i * 3);
+    const e = i % 3, t = Math.random(), j = () => (Math.random() - .5) * 10;
+    tgt.push(V[e].clone().lerp(V[(e + 1) % 3], t).add(v3(j(), j(), j())));
+    wt[i] = Math.random() < .3 ? 1 : Math.pow(Math.random(), 2.2) * .9;
+    bend[i] = (Math.random() - .5) * 160;
+  }
+  // two point sizes = heterogeneous records
+  const pos = new Float32Array(N * 3), attr = new THREE.BufferAttribute(pos, 3), half = N >> 1;
+  [[0, half, 1.6, .55], [half, N - half, 3, .8]].forEach(([start, count, size, opacity]) => {
+    const g = new THREE.BufferGeometry().setAttribute('position', attr); g.setDrawRange(start, count);
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: INK, size, sizeAttenuation: false, transparent: true, opacity })));
+  });
+  const p = v3(0, 0, 0);
+  return t => {
+    tri.rotation.set(.3 + Math.sin(t * .11) * .15, Math.sin(t * .15) * .6, Math.sin(t * .07) * .08);
+    tri.updateMatrixWorld();
+    const k = ease((t - .2) / 2.6);
+    for (let i = 0; i < N; i++) {
+      const e = wt[i] * k;
+      p.copy(tgt[i]).applyMatrix4(tri.matrixWorld);
+      pos[i * 3]     = src[i * 3]     + (p.x - src[i * 3]) * e;
+      pos[i * 3 + 1] = src[i * 3 + 1] + (p.y - src[i * 3 + 1]) * e + Math.sin(Math.PI * e) * bend[i];
+      pos[i * 3 + 2] = src[i * 3 + 2] + (p.z - src[i * 3 + 2]) * e;
+    }
+    attr.needsUpdate = true;
+    names.forEach((el, i) => { place(el, V[i].clone().multiplyScalar(1.2).applyMatrix4(tri.matrixWorld)); el.style.opacity = k; });
+  };
+});
+
+/* 03 · four pinned solids, three drifting dashed wireframes */
+mount('invariants', ({ cam, scene, label, place }) => {
+  // azimuth off the diagonal so no two pins share a screen column
+  cam.position.set(800, 500, 300); cam.lookAt(0, 150, 0); cam.updateMatrixWorld();
+  const R = v3(0, 0, 0).setFromMatrixColumn(cam.matrixWorld, 0), U = v3(0, 0, 0).setFromMatrixColumn(cam.matrixWorld, 1);
+  const onScreen = (sx, sy) => v3(0, 150, 0).addScaledVector(R, sx).addScaledVector(U, sy);
+  const grid = new THREE.GridHelper(560, 8, LINE, LINE); scene.add(grid);
+  const S = 72, fixed = [['3A 形状', -140, -140, 150], ['测量五元组', 140, -140, 150], ['ID 公式', -140, 140, 150], ['lineage 语法', 140, 140, 150]];
+  const box = new THREE.BoxGeometry(S, S, S), edges = new THREE.EdgesGeometry(box);
+  const pins = fixed.map(([name, x, z, len]) => {
+    const m = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: INK })); m.position.set(x, S / 2, z); scene.add(m);
+    const e = new THREE.LineSegments(edges, lineMat(BG)); e.position.copy(m.position); scene.add(e);
+    const pin = new THREE.Line(geo([v3(x, S, z), v3(x, S + 1, z)]), lineMat(RED)); scene.add(pin);
+    const head = new THREE.Points(geo([v3(0, 0, 0)]), new THREE.PointsMaterial({ color: RED, size: 9, sizeAttenuation: false })); scene.add(head);
+    return { x, z, len, pin, head, lbl: label(name) };
+  });
+  const loose = [['中间表', new THREE.OctahedronGeometry(62), onScreen(-380, 170)],
+                 ['缓存键', new THREE.BoxGeometry(96, 56, 120), onScreen(370, 230)],
+                 ['阶段划分', new THREE.IcosahedronGeometry(58, 0), onScreen(360, -200)]].map(([name, g, at], i) => {
+    const l = new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineDashedMaterial({ color: SOFT, dashSize: 6, gapSize: 5 }));
+    l.computeLineDistances(); l.position.copy(at); scene.add(l);
+    return { l, at, ph: i * 2.1, lbl: label(name, 'm') };
+  });
+  return t => {
+    const g = ease((t - .4) / 1.2);
+    pins.forEach(({ x, z, len, pin, head, lbl }) => {
+      const top = S + len * g;
+      pin.geometry.setFromPoints([v3(x, S, z), v3(x, Math.max(top, S + 1), z)]);
+      head.position.set(x, top, z); head.visible = g > .02;
+      place(lbl, v3(x, top + 28, z)); lbl.style.opacity = g;
+    });
+    loose.forEach(({ l, at, ph, lbl }) => {
+      l.position.set(at.x + Math.sin(t * .35 + ph) * 24, at.y + Math.sin(t * .5 + ph) * 18, at.z + Math.cos(t * .3 + ph) * 24);
+      l.rotation.set(t * .12 + ph, t * .18, t * .07);
+      l.scale.set(1 + .18 * Math.sin(t * .6 + ph), 1 + .18 * Math.sin(t * .45 + ph + 1), 1 + .18 * Math.sin(t * .5 + ph + 2));
+      place(lbl, l.position.clone().addScaledVector(U, -96));
+    });
+  };
+});
+
+/* 08 · one source row, three pathways, one assemble, one merge; records flow as red squares */
+mount('journey', ({ scene, label, place }) => {
+  const S = v3(-860, -380, 0), A = v3(-620, -380, 0), J = v3(700, -280, 0), M = v3(900, -280, 0);
+  const lanes = [
+    ['抗体 AB',  [v3(-400, -230, 40), v3(-60, 110, 80), v3(320, 110, 40), v3(560, -120, 0)], .5],
+    ['抗原 AG',  [v3(-400, -330, 0), v3(0, -210, 0), v3(420, -230, 0)], .5],
+    ['测量 AFF', [v3(-420, -470, -40), v3(360, -470, -40)], .45],
+  ].map(([name, mid, at]) => {
+    const path = new THREE.CurvePath();
+    path.add(new THREE.LineCurve3(S, A));
+    path.add(new THREE.CatmullRomCurve3([A, ...mid, J], false, 'centripetal'));
+    path.add(new THREE.LineCurve3(J, M));
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(path, 480, 1.6, 6), new THREE.MeshBasicMaterial({ color: INK }));
+    scene.add(tube);
+    return { path, tube, n: tube.geometry.index.count, lbl: label(name), at: path.getPointAt(at).add(v3(0, 28, 0)) };
+  });
+  const node = (p, color, size) => { const o = new THREE.Points(geo([p]), new THREE.PointsMaterial({ color, size, sizeAttenuation: false })); scene.add(o); return o; };
+  node(S, INK, 10); node(A, INK, 14); node(J, RED, 18); node(M, INK, 18);
+  const tags = [['原始行', S, -30, 'm'], ['adapter', A, -30, ''], ['汇合 assemble', J, -34, 'r'], ['按 record 编号', J, -56, 'm'], ['合并 merge', M, -34, ''], ['按 3A_ID', M, -56, 'm']]
+    .map(([t, p, dy, c]) => ({ el: label(t, c), p: p.clone().add(v3(0, dy, 0)) }));
+
+  const K = 16, pos = new Float32Array(lanes.length * K * 3);
+  const dots = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(pos, 3)),
+    new THREE.PointsMaterial({ color: RED, size: 7, sizeAttenuation: false, transparent: true }));
+  scene.add(dots);
+  const q = v3(0, 0, 0);
+  return t => {
+    const k = ease((t - .3) / 1.6), f = ease((t - 1.6) / .8);
+    lanes.forEach(({ tube, n, lbl, at }) => { tube.geometry.setDrawRange(0, Math.floor(n * k / 6) * 6); place(lbl, at); lbl.style.opacity = ease((t - 1) / .8); });
+    tags.forEach(({ el, p }, i) => { place(el, p); el.style.opacity = ease((t - .3 - i * .2) / .8); });
+    lanes.forEach(({ path }, l) => { for (let j = 0; j < K; j++) { path.getPointAt((((t - 1.6) * .045 + j / K + l * .02) % 1 + 1) % 1, q); pos.set([q.x, q.y, q.z + 2], (l * K + j) * 3); } });
+    dots.geometry.attributes.position.needsUpdate = true;
+    dots.material.opacity = f;
+  };
+});
+
+/* 13 · one scan of the residue chain: the variable-domain intervals are the output, the rest is derived */
+mount('beads', ({ w, scene, label, place }) => {
+  // an scFv-like construct, in residues: [start, end, name, isInterval]
+  const SEG = [[0, 10, '信号肽', 0], [11, 52, 'VH', 1], [53, 64, 'linker', 0], [65, 104, 'VL', 1], [105, 111, '标签', 0]];
+  const N = 112, X0 = -w / 2 + 40, DX = (w - 80) / (N - 1);
+  const chain = new THREE.Group(); scene.add(chain);
+  const P = [...Array(N)].map((_, i) => v3(X0 + i * DX, Math.sin(i * .55) * 22, Math.cos(i * .55) * 22));
+  chain.add(new THREE.Line(geo(P), lineMat(LINE)));
+  const col = new Float32Array(N * 3), c = new THREE.Color();
+  const beads = new THREE.Points(geo(P).setAttribute('color', new THREE.BufferAttribute(col, 3)),
+    new THREE.PointsMaterial({ size: 9, sizeAttenuation: false, vertexColors: true }));
+  chain.add(beads);
+  const seg = i => SEG.find(s => i >= s[0] && i <= s[1]);
+  const scan = new THREE.Line(geo([v3(0, -110, 60), v3(0, 110, 60)]), lineMat(RED)); scene.add(scan);
+  const tags = SEG.map(([a, b, name, iv]) => ({ el: label(name, iv ? 'r' : 'm'), x: X0 + (a + b) / 2 * DX, a }));
+  const brk = SEG.filter(s => s[3]).map(([a, b]) => { const l = new THREE.Line(geo([v3(X0 + a * DX, -48, 0), v3(X0 + a * DX, -58, 0), v3(X0 + b * DX, -58, 0), v3(X0 + b * DX, -48, 0)]), lineMat(RED)); scene.add(l); return { l, a }; });
+  return t => {
+    chain.rotation.x = t * .25;
+    const sx = X0 - 20 + ease((t - .4) / 2.4) * (w - 40);   // scan position
+    scan.position.x = sx; scan.visible = sx < X0 + (N - 1) * DX + 10 && t > .4;
+    for (let i = 0; i < N; i++) {
+      c.set(P[i].x > sx ? INK : seg(i)[3] ? RED : MID);
+      col.set([c.r, c.g, c.b], i * 3);
+    }
+    beads.geometry.attributes.color.needsUpdate = true;
+    tags.forEach(({ el, x, a }) => { place(el, v3(x, 80, 0)); el.style.opacity = sx > X0 + a * DX ? 1 : 0; });
+    brk.forEach(({ l, a }) => { l.visible = sx > X0 + a * DX; });
+  };
+});
+
+// ?t=5 freezes every scene at 5 s (for stills); reduced motion shows the settled frame
+const FREEZE = RM ? 600 : parseFloat(new URLSearchParams(location.search).get('t'));
+function frame(now) {
+  for (const s of live) {
+    if (!s.slide.classList.contains('is-active')) { s.t0 = null; continue; }
+    s.t0 ??= now;
+    s.update(FREEZE >= 0 ? FREEZE : (now - s.t0) / 1000);
+    s.renderer.render(s.ctx.scene, s.ctx.cam);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
