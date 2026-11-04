@@ -73,6 +73,27 @@ tags:
 
 > 原 R68 不存在, R69 ~ R81 ID 整体前移 1 位.
 
+- [[src-03-abdesign-1-0-inventory]]: direct antigen sequence with reference-PDB provenance.
+- [[src-08-avida-htnfa-inventory]]: fixed TNF-alpha target with direct sequence.
+- [[src-09-flab-inventory]]: mixed fixed targets and AbRank antigen sequences.
+- [[src-10-abrank-inventory]]: direct antigen sequences with PDB anchors.
+- [[src-11-abbibench-inventory]]: benchmark-level reference antigens reconstructed from structures.
+- [[src-12-asd-agab-db-inventory]]: large source-native antigen sequence collection.
+- [[src-13-andd-inventory]]: direct sequences, multi-chain separators, and missing values.
+- [[src-14-ab-bind-inventory]]: parent-PDB antigen entities without row-level sequences.
+- [[src-15-skempi-2-0-inventory]]: multi-chain partner antigens and reference structures.
+- [[src-16-guest-inventory]]: single-chain and multi-chain antigens reconstructed from PDB/FASTA.
+- [[src-20-sabdab-sabdab2-inventory]]: structure-chain antigens, NA chains, and non-protein entities.
+- [[src-23-mit-ll-alphaseq-inventory]]: fixed 14-aa peptide target without row-level antigen fields.
+- [[src-50-graphinity-inventory]]: antigen chains reconstructed from structure-linked FASTA.
+- [[src-74-abdesign-2-0-inventory]]: fixed PD-1 target derived from a reference structure.
+- [[src-75-her2-aff-large-buzz-inventory]]: fixed HER2 extracellular-domain target.
+- [[src-76-tdc-antibodyaff-inventory]]: direct source-native antigen sequences and entity names.
+- [[src-77-akbar-sabdab-kd-csv-inventory]]: direct source-native antigen sequences and duplicate source snapshot.
+- [[src-78-mochibind-sampled-data-inventory]]: four fixed antigen constructs with direct sequences.
+- [[src-79-alphabind-inventory]]: fixed campaign-level antigen constructs without bundled sequences.
+- [[src-80-antipasti-inventory]]: PDB-chain antigen recovery with unresolved NA/non-protein entities.
+
 ## Antibody-Antigen Affinity Datasets SRC
 
 > 20 个 datasets 中的每条 data 可抽象建模为 `((ab, ag), label, assay, condition, replicate, source)`:
@@ -134,7 +155,7 @@ tags:
 | Nanobody | 110,853 | 85,589 | 682 | 显式标记为 Nanobody, 作为 VHH 类处理. |
 | Total | 1,177,819 | 868,194 | 607,340 | |
 
-![R12 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r12-antibody-sequence-type-bar.svg)
+![R12 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r12-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -145,7 +166,7 @@ tags:
 | 缺失 | 80–139 aa | 66,526 | Light-only. |
 | 140–219 aa | 缺失 | 132,870 | Heavy-only 或异常 / 非标准构建体, 不能直接归类. |
 
-![R12 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r12-antibody-length-combinations.svg)
+![R12 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r12-antibody-length-combinations.svg)
 
 ### Antibody. R13 ANDD
 
@@ -162,7 +183,7 @@ tags:
 | Unknown | 287 | 235 | 235 | `Ab_or_Nano` 为 `BJ`, 构建体标签缺失 / `Antibody` 中未落入上述槽位分类的剩余记录. |
 | Total | 48,800 | 38,014 | 13,688 | |
 
-![R13 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r13-antibody-sequence-type-bar.svg)
+![R13 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r13-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -173,7 +194,7 @@ tags:
 | 200–512 aa | 193–523 aa | 7,534 | 双长链主簇. |
 | 116–236 aa | 98–219 aa | 283 | 其他双链长度组合. |
 
-![R13 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r13-antibody-length-combinations.svg)
+![R13 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r13-antibody-length-combinations.svg)
 
 ### Antibody. R11 AbBiBench
 
@@ -182,14 +203,14 @@ tags:
 | Heavy + Light | 215,699 | 148,792 | 148,792 | 17 binding-affinity CSV 均含 `heavy_chain_seq` 与 `light_chain_seq`; 原始字段没有标注不能强行分类 IgG / Fab / Fv. |
 | Total | 215,699 | 148,792 | 148,792 | |
 
-![R11 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r11-antibody-sequence-type-bar.svg)
+![R11 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r11-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
 | 117 / 118 / 119 / 121 aa | 107 / 108 / 109 / 113 / 115 aa | 184,774 | 短重链序列 + 短轻链序列; 仅按 source-native 长度描述. |
 | 211 / 215 aa | 213 aa | 30,925 | 长重链序列 + 213 aa 轻链序列. |
 
-![R11 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r11-antibody-length-combinations.svg)
+![R11 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r11-antibody-length-combinations.svg)
 
 ### Antibody. R09 FLAb
 
@@ -203,7 +224,7 @@ tags:
 | Nanobody | 657,179 | 80,865 | 0 | 5 张表明确标注 VHH、Nanobody 或 sdAb. |
 | Total | 4,627,533 | 402,362 | 10,867 | 165 张表、30 个 study. |
 
-![R09 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r09-antibody-sequence-type-bar.svg)
+![R09 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r09-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | ---: | --- |
@@ -217,7 +238,7 @@ tags:
 | 80–139 aa | missing | 151,256 | 单链重链槽: VH-only 57 行 + Nanobody 151,199 行 (长度 80–139 aa 的短 VHH). |
 | 220 aa+ | 220 aa+ | 3 | Fv 中两侧均为长串, 仅 3 行, 原始字段无法确认构建体. |
 
-![R09 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r09-antibody-length-combinations.svg)
+![R09 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r09-antibody-length-combinations.svg)
 
 ### Antibody. R10 AbRank
 
@@ -226,7 +247,7 @@ tags:
 | Heavy + Light | 342,356 | 76,079 | 76,079 | 原始字段没有标注不能强行分类. |
 | Total | 342,356 | 76,079 | 76,079 | |
 
-![R10 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r10-antibody-sequence-type-bar.svg)
+![R10 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r10-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -236,7 +257,7 @@ tags:
 | 450–462 aa | 203–215 aa | 4,973 | 重链约四个结构域，轻链含恒定区. |
 | residual (稀有组合) | — | 396 | 跨簇的零散长度对，单个组合均 < 200 条. |
 
-![R10 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r10-antibody-length-combinations.svg)
+![R10 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r10-antibody-length-combinations.svg)
 
 ### Antibody. R14 AB-Bind
 
@@ -249,7 +270,7 @@ tags:
 | Unknown | 108 | 0 | 0 | 6 个 parent 没有抗体链: 1AK4、1JTG、1KTZ、HM_1KTZ、1FFW 是普通蛋白–蛋白复合物, 3K2M 是 monobody 支架. |
 | Total | 1,101 | 25 | 21 | |
 
-![R14 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r14-antibody-sequence-type-bar.svg)
+![R14 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r14-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -258,7 +279,7 @@ tags:
 | 116-231 aa | missing | 271 | Heavy-only. 1T83 的 IGG1 Fc 链 224 aa 与 3WJJ 的 Ig gamma-1 chain C region 230 aa, 无 Light 槽位. |
 | missing | missing | 108 | 6 个 parent 无抗体链: 1AK4, 1JTG, 1KTZ, HM_1KTZ, 1FFW 为普通蛋白-蛋白复合物; 3K2M 为 monobody 支架. |
 
-![R14 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r14-antibody-length-combinations.svg)
+![R14 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r14-antibody-length-combinations.svg)
 
 ### Antibody. R15 SKEMPI 2.0
 
@@ -272,7 +293,7 @@ tags:
 | Unknown | 5,823 | 289 | 289 | accession 无抗体链, 是普通蛋白-蛋白复合物 (蛋白酶-抑制剂、HLA-TCR、Ras-Raf 等). |
 | Total | 7,085 | 343 | 343 | |
 
-![R15 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r15-antibody-sequence-type-bar.svg)
+![R15 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r15-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -283,7 +304,7 @@ tags:
 | 220 aa+ | 220 aa+ | 9 | Heavy 与 Light 均为长序列, 具体构建体未明确. |
 | 80–139 aa | missing | 8 | Nanobody, VHH 长度约 120–138 aa. |
 
-![R15 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r15-antibody-length-combinations.svg)
+![R15 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r15-antibody-length-combinations.svg)
 
 ### Antibody. R20 SAbDab / SAbDab2
 
@@ -295,7 +316,7 @@ tags:
 | Light-only | 95 | 31 | 31 | 源表显式 `type=SD-L`. 只有 light 槽位. |
 | Total | 22,264 | 6,897 | 6,897 | |
 
-![R20 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r20-antibody-sequence-type-bar.svg)
+![R20 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r20-antibody-sequence-type-bar.svg)
 
 | Heavy length | Light length | Records | Description |
 | --- | --- | --- | --- |
@@ -306,7 +327,7 @@ tags:
 | 145–173 aa | missing | 10 | 长重链单域构建体. |
 | 89–144 aa | 77 aa | 1 | VL 极短离群值, 单条 Fab 实例. |
 
-![R20 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r20-antibody-length-combinations.svg)
+![R20 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r20-antibody-length-combinations.svg)
 
 ### Antibody. R16 Guest antibody benchmark
 
@@ -320,7 +341,7 @@ tags:
 | Heavy-only | 3 | 3 | 3 | 5SV4 Single Domain Antibody A3C8、2I24 鲨鱼 IgNAR New Antigen Receptor、6CWK alpaca anti-ricin 单链. 均无明确 Heavy / Light 双槽位, 单条 120–139 aa. |
 | Total | 67 | 67 | 67 | |
 
-![R16 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r16-antibody-sequence-type-bar.svg)
+![R16 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r16-antibody-sequence-type-bar.svg)
 
 | Heavy length | Light length | Records | Description |
 | --- | --- | ---: | --- |
@@ -329,7 +350,7 @@ tags:
 | 116–143 aa | 108 aa | 1 | 1VFB 的 Fv D1.3, VH 116 aa + VL 108 aa. |
 | 210–265 aa | missing | 1 | 5C2B 的 3B4 scFv 存为单条 254 aa 链, 无独立 Light 槽位. |
 
-![R16 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r16-antibody-length-combinations.svg)
+![R16 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r16-antibody-length-combinations.svg)
 
 ### Antibody. R80 AlphaBind public experiments
 
@@ -341,14 +362,14 @@ tags:
 | Nanobody / VHH | 67,058 | 66,600 | 0 | `vhh72` fine-tuning 与 validation 两个活动；原始数据显式标注为 camelid single-domain VHH. |
 | Total | 209,924 | 204,953 | 0 | |
 
-![R80 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r80-antibody-sequence-type-bar.svg)
+![R80 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r80-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
 | 240-248 aa | missing | 142,866 | scFv 单链: aab-pp489 244-248 aa (64,259), pembrolizumab 245-247 aa (67,386), trastuzumab 240-245 aa (11,221). |
 | 122-126 aa | missing | 67,058 | VHH 单域: 主峰 125 aa (52,750), 126 aa (10,488). |
 
-![R80 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r80-antibody-length-combinations.svg)
+![R80 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r80-antibody-length-combinations.svg)
 
 ### Antibody. R23 MIT-LL AlphaSeq
 
@@ -359,7 +380,7 @@ tags:
 | scFv | 1,259,700 | 104,968 | 0 | 源文档与 README 明确称主表 `Sequence` 为完整 scFv; 每条为 `HC` + 15 aa linker `GGGGSGGGGSGGGGS` + `LC`, 另有六条 CDR 字段. 构建体标签是数据集级属性, 不是逐行字段. |
 | Total | 1,259,700 | 104,968 | 0 | |
 
-![R23 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r23-antibody-sequence-type-bar.svg)
+![R23 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r23-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -367,7 +388,7 @@ tags:
 | 117 aa | 108 aa | 357,840 | 占 28.4%; 完整 `Sequence` 240 aa. |
 | 119 aa | 115 aa | 269,700 | 占 21.4%; 完整 `Sequence` 249 aa. |
 
-![R23 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r23-antibody-length-combinations.svg)
+![R23 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r23-antibody-length-combinations.svg)
 
 ### Antibody. R03 AbDesign 1.0
 
@@ -378,7 +399,7 @@ tags:
 | Heavy + Light | 360 | 338 | 338 | 17 个 parent 只写 `heavy chain` / `light chain` 或单克隆抗体名, 未标构建体, 不能由槽位或长度判定 IgG / Fab / Fv. |
 | Total | 1,360 | 1,187 | 1,187 | |
 
-![R03 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r03-antibody-sequence-type-bar.svg)
+![R03 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r03-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -387,7 +408,7 @@ tags:
 | 224-227 aa | 208 aa | 109 | 重链偏长 + 轻链固定 208 aa, 属 3NGB、3SE8、3SE9 三个 HIV-1 Fab. |
 | 180 aa | 167 aa | 20 | 1JRH 的 A6 Fab 单簇; 双链都短于常规 Fab 量级, 源 entity 仍标 `FAB FRAGMENT`. |
 
-![R03 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r03-antibody-length-combinations.svg)
+![R03 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r03-antibody-length-combinations.svg)
 
 ### Antibody. R75 AbDesign 2.0
 
@@ -398,7 +419,7 @@ tags:
 
 > 全部 576 条记录只有 1 个 PDB entry `5GGS`, 即亲本 pemprolizumab Fab–PD-1 复合物; 没有单独为任何突变体解出的结构.
 
-![R75 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r75-antibody-sequence-type-bar.svg)
+![R75 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r75-antibody-sequence-type-bar.svg)
 
 `affinity.csv` 另有 2 行 `Negative Control`/`Positive Control`, 无 antibody sequence, 不并入上表. `binding` 为二值判定, `kd`/`kon`/`koff` 为动力学拟合, 有 189 行 `kd` 为空, 空值与 0 不自动解释为 non-binder. 五张 developability 表是同一批抗体的其他 assay, 不与 affinity 行相加.
 
@@ -406,7 +427,7 @@ tags:
 | --- | --- | --- | --- |
 | 232 aa | 218 aa | 576 | 唯一观测到的长度组合; 全部记录只变重链, 轻链恒定. |
 
-![R75 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r75-antibody-length-combinations.svg)
+![R75 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r75-antibody-length-combinations.svg)
 
 ### Antibody. R76 HER2-aff-large / Buzz
 
@@ -417,13 +438,13 @@ tags:
 
 > 全部 524,346 条记录共享参考复合物 `1N8Z` (Herceptin Fab–HER2); 没有为任何变体单独解出的结构, 也没有逐行 PDB 字段.
 
-![R76 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r76-antibody-sequence-type-bar.svg)
+![R76 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r76-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
 | missing | missing | 524,346 | 表中只有 10 aa 的 CDR-H3, 无重链/轻链序列. |
 
-![R76 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r76-antibody-length-combinations.svg)
+![R76 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r76-antibody-length-combinations.svg)
 
 ### Antibody. R08 AVIDa-hTNFa
 
@@ -432,7 +453,7 @@ tags:
 | Nanobody / VHH | 5,580 | 5,577 | 0 | 上游 dataset card 逐条标注 `VHH_sequence`; 序列含 22 aa 信号肽样前缀与 C 端 6×His, 使用前需按来源定义裁剪, 不能当作已标准化的 VH 区. |
 | Total | 5,580 | 5,577 | 0 | |
 
-![R08 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r08-antibody-sequence-type-bar.svg)
+![R08 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r08-antibody-sequence-type-bar.svg)
 
 > 全部记录只对应单一抗原构建体 `TNFa-WT-beads` (233 aa 人 TNFα 前体); `1TNF` 是抗原/参考结构锚点, 不是任何一条 VHH–antigen 复合物 PDB.
 
@@ -442,7 +463,7 @@ tags:
 | 136-168 aa | missing | 5,570 | 主簇 99.8%: 原始串 136-168 aa, 主峰 149 aa (522 条); 去掉 22 aa 信号肽样前缀与 6×His 后为 108-140 aa, 主峰 121 aa, 属单域 VHH 量级. |
 | 172 aa | missing | 1 | 单条偏长构建体, 未标构建体差异, 保留为独立观测组. |
 
-![R08 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r08-antibody-length-combinations.svg)
+![R08 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r08-antibody-length-combinations.svg)
 
 ### Antibody. R77 TDC AntibodyAff
 
@@ -455,7 +476,7 @@ tags:
 >
 > `X1` 有 21 行两个槽位序列完全相同, 其中 15 行含 `GGGGSGGGGSGGGGS` linker, 是上游把单链构建体同时写入两个槽位的结果; 源表未标 `scFv`, 按槽位形状归入 `Heavy + Light`, 不据此改判构建体.
 
-![R77 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r77-antibody-sequence-type-bar.svg)
+![R77 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r77-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | ---: | --- |
@@ -464,7 +485,7 @@ tags:
 | 231-263 aa | 234-259 aa | 33 | 双链均超过常规 Fab 量级; 其中 21 行两槽位为同一条含 linker 的单链, 15 行含 `GGGGSGGGGSGGGGS`. |
 | 454 aa | 213 aa | 2 | `6D6U`、`6D6T` 的 GABA-A receptor 抗体, 重链含完整 CH1-CH2-CH3 量级序列, 轻链为常规 VL-CL. |
 
-![R77 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r77-antibody-length-combinations.svg)
+![R77 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r77-antibody-length-combinations.svg)
 
 ### Antibody. R78 Akbar SAbDab Kd CSV
 
@@ -473,7 +494,7 @@ tags:
 | Heavy + Light | 493 | 431 | 431 | `Antibody` 为两元素 `[heavy, light]` 列表字符串; 源表无 construct type 字段, 不能判定 IgG / Fab / Fv. 长度呈双峰: H 210-261 aa + L 205-228 aa 为主簇 (424 行), H 114-137 aa + L 104-146 aa 为纯可变区量级 (34 行). |
 | Total | 493 | 431 | 431 | |
 
-![R78 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r78-antibody-sequence-type-bar.svg)
+![R78 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r78-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -482,7 +503,7 @@ tags:
 | 231-263 aa | 234-259 aa | 33 | 双链均超过常规 Fab 量级; 其中 21 行两槽位为同一条含 linker 的单链. |
 | 454 aa | 213 aa | 2 | 重链含完整 CH1-CH2-CH3 量级序列, 轻链为常规 VL-CL. |
 
-![R78 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r78-antibody-length-combinations.svg)
+![R78 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r78-antibody-length-combinations.svg)
 
 ### Antibody. R79 MochiBind sampled data
 
@@ -492,7 +513,7 @@ tags:
 | Nanobody / VHH | 9,580 | 9,574 | 0 | VHH72 系列表既无 `lc` 槽位也无 linker, `mata_sequence` 与 `hc` 完全相同 (9,580 行)。`Nanobody / VHH` 来自 `df_vhh72_*` 系列表与 `vhh72.pt` 的体系级命名, 是 parent-level 属性, 不是逐行字段。 |
 | Total | 33,454 | 33,337 | 0 | |
 
-![R79 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r79-antibody-sequence-type-bar.svg)
+![R79 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r79-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -501,7 +522,7 @@ tags:
 | 123-126 aa | 107 aa | 9,630 | PP489 系: 轻链 107 aa 恒定, 重链 123-126 aa, 主峰 125 aa (8,930 行)。 |
 | 122-126 aa | missing | 9,580 | VHH72 系: 只有重链槽位, 源表无轻链列, 记 missing。 |
 
-![R79 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r79-antibody-length-combinations.svg)
+![R79 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r79-antibody-length-combinations.svg)
 
 ### Antibody. R50 Graphinity
 
@@ -517,7 +538,7 @@ tags:
 | Unknown | 81 | 5 | 5 | AB-Bind 645 内 5 个非抗体–抗原复合物 (README 明示), entity 描述无抗体词; 其余 944,688 行均有抗体 entity. |
 | Total | 964,805 | 1,443 | 1,442 | |
 
-![R50 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r50-antibody-sequence-type-bar.svg)
+![R50 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r50-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | --- | --- |
@@ -534,7 +555,7 @@ tags:
 | 104-172 aa | 189-281 aa | 339 | 短重链 + 长轻链的不对称组合. |
 | missing | missing | 624 | 仅 `7CU4`, RCSB 撤销无替代, 序列不可取得. |
 
-![R50 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r50-antibody-length-combinations-fixed.svg)
+![R50 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r50-antibody-length-combinations-fixed.svg)
 
 ### Antibody. R81 ANTIPASTI
 
@@ -551,7 +572,7 @@ tags:
 
 > 1,266 行中 26 行缺 H 槽位、168 行缺 L 槽位, 另 5 行链 ID 无法解析; 因此不能把全部行转成完整 H/L 字符串. 每行自带其 PDB entry, Unique with PDB_ID 是结构 entry 粒度: 一个 PDB 可有多行 (1–12), 不证明每行都是独立结构.
 
-![R81 Type 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r81-antibody-sequence-type-bar.svg)
+![R81 Type 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-1-r81-antibody-sequence-type-bar.svg)
 
 | Heavy Length | Light Length | Records | Description |
 | --- | --- | ---: | --- |
@@ -563,7 +584,7 @@ tags:
 | missing | 327–334 aa | 2 | 轻链含 CH 量级 (327 / 334 aa); 4k3h, H 槽位缺失. |
 | 115–115 aa | 245–245 aa | 1 | 单行 5kve 尾链: H 115 aa 短重链 + L 245 aa, 源 scFv=False, 保留槽位形状. |
 
-![R81 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r81-antibody-length-combinations.svg)
+![R81 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-2-r81-antibody-length-combinations.svg)
 
 ## Antigen
 
@@ -603,7 +624,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 265,508 | 3,387 | 3,387 | unavailable / unavailable | 14-34,350 aa; median 607 aa; 1,102 unique lengths | Direct sequence / source-native sequence | Antigen sequence 每条记录均非空，序列字符均为标准氨基酸字符。主要长度簇为 607 aa (193,813 records)、519 aa (48,055 records)、14 aa (6,506 records)。Big source 共 19 个来源类别。 |
 
-![R12 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r12-antigen-length-distribution.svg)
+![R12 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r12-antigen-length-distribution.svg)
 
 ### Antigen. R13 ANDD
 
@@ -611,7 +632,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 48,800 | 6,766 | 3,865 | PDB=0/UniProt=0: 195; PDB=0/UniProt=1: 0; PDB=1/UniProt=0: 1,217; PDB=1/UniProt=1: 5,354 | 3-3,810 aa; median 298 aa; 958 unique lengths | Direct sequence / Source-native | Ag_Seq 有值的记录为 12,617 条, 缺失 36,183 条. 唯一序列去重保留原始 / 多链分隔符. 长度图基于 3,865 条唯一抗原序列, 按实际范围划分 20 个等宽区间. |
 
-![R13 Antigen Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r13-antigen-length-distribution.svg)
+![R13 Antigen Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r13-antigen-length-distribution.svg)
 
 ### Antigen. R11 AbBiBench
 
@@ -619,7 +640,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 215,699 | 12 | 9 | PDB=1/UniProt=unavailable | 14-581 aa | Direct sequence / Reference PDB | 17 个 benchmark 条目 (metadata.json) 声明 12 个 reference complex; 抗原序列由 complex_structure PDB 的 antigen_chains 重建, 去重后 9 条唯一序列 (14 / 95 / 99 / 129 / 184 / 220 / 493 x2 / 581 aa)。PDB 是共享参考复合物, 非逐行实验结构; affinity 表本身无抗原字段。 |
 
-![R11 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r11-antigen-length-distribution.svg)
+![R11 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r11-antigen-length-distribution.svg)
 
 ### Antigen. R09 FLAb
 
@@ -627,7 +648,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 4,606,788 | 5,985 | 4,962 | PDB=1/UniProt=0: 5,933; PDB=0/UniProt=0: 52 | 17-1,353 aa; median 240 aa; 343 unique lengths (AbRank) | Direct sequence / Source-native | 86 张 binding 表. AbRank 34.2 万行逐行带 `Ag_name` 与 `Ag_seq`, 5,933 个唯一抗原实体, 全部挂 `Ag_PDB_ID` (297 个唯一 PDB 值, 为抗原侧锚点). 其余 79 表多为单抗原固定目标 (52 个命名实体, 如 DCC, IL23R, TNFa-WT-beads, hHER2), 其中 kothiwal 11 个抗原带直接序列. 长度统计以 AbRank 5,933 条唯一实体的 `Ag_seq` 为准 (4,951 条唯一序列). |
 
-![R09 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r09-antigen-length-distribution.svg)
+![R09 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r09-antigen-length-distribution.svg)
 
 ### Antigen. R10 AbRank
 
@@ -635,7 +656,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 342,356 | 5,933 | 4,951 | PDB=1/UniProt=0: 5,933; PDB=0/UniProt=0: 0 | 17-1,353 aa; median 240 aa; 343 unique lengths | Direct sequence / Source-native | 与 R09 内嵌的 AbRank 数据集同源 (同一份 AbRank_dataset.csv 的 Kaggle v4 版, R10 为 TSV 分隔, R09 为逗号版). 逐行带 `Ag_name` 与 `Ag_seq`, 5,933 个唯一抗原实体全挂 `Ag_PDB_ID` (297 个唯一 PDB 值, 抗原侧结构锚点), 无 UniProt 字段. 4,951 条唯一抗原序列, 长度 17-1,353 aa. |
 
-![R10 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r10-antigen-length-distribution.svg)
+![R10 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r10-antigen-length-distribution.svg)
 
 ### Antigen. R14 AB-Bind
 
@@ -659,7 +680,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 22,264 | 12,451 | 7,276 | PDB=1/UniProt=0: 12,451; PDB=0/UniProt=0: 0 | 1-4,327 aa; median 316 aa; 1,252 unique lengths | PDB-derived sequence / Source-native | `sabdab2_summary.csv` 逐行带 `antigen_name` (19,913 行有值) 与 `antigen_chain` (结构内链号). 唯一实体按 (antigen_name, antigen_chain) 计 12,451 个; 仅按名称去重 6,286 个 (Spike glycoprotein, Guanine nucleotide-binding protein, Spike protein S1 等). 表内无抗原序列字段; 抗原序列按 (PDB, antigen_chain) 从本地 snapshot CIF (11,604 个结构) 按链重建, 11,024 个实体 (蛋白抗原全覆盖) → 7,276 条唯一序列 (长度 1-4,327 aa, median 316 aa); 1,427 个实体为 NA 链或非蛋白抗原 (配体/离子如 N-(2,6-dimethylphenyl)-5,6-dihydro-4H-1,3-thiazin-2-amine, CHLORIDE, ZINC, ACETATE, DNA/RNA), 无蛋白链可提取. 序列属 PDB-derived, 非逐行独立解出的抗原结构. 无 UniProt 字段. |
 
-![R20 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r20-antigen-length-distribution.svg)
+![R20 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r20-antigen-length-distribution.svg)
 
 ### Antigen. R16 Guest antibody benchmark
 
@@ -667,7 +688,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 67 | 63 | 49 | PDB=1/UniProt=0: 49; PDB=0/UniProt=0: 14 | 71-1,545 aa; median 263 aa; 40 unique lengths | PDB-derived sequence / Source-native | 67 个 docking case, 每个 case 带 `Antigen PDB` (58 个唯一结构) 与 `Antigen` 名. 按 (Antigen PDB, Antigen) 计 63 个抗原实体, 其中 49 个可从本地 RCSB FASTA 按 `Antigen PDB` 的链 (单链或多链实体, 如 1TNF_ABC = TNF-alpha 三聚体) 重建序列, 序列为派生数据; 14 个实体本地无对应链 fasta (1IK0, 1RUZ, 1TGJ 等, 部分为括号链名). 长度 71-1,545 aa, median 263 aa. 无 UniProt 字段. |
 
-![R16 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r16-antigen-length-distribution.svg)
+![R16 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r16-antigen-length-distribution.svg)
 
 ### Antigen. R80 AlphaBind public experiments
 
@@ -683,7 +704,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 1,259,700 | 1 | 1 | Reference PDB: 1; UniProt=unavailable | 14 aa | Direct sequence / Fixed target | 全部 1,259,700 行针对单一固定目标肽 `PDVDLGDISGINAS` (SARS-CoV-2 S2 片段, 14 aa), 活动级固定构建体, 无逐行抗原字段. 参考结构 6LXT 是目标肽所在复合物, 非这些 scFv 的逐行结构. 目标序列由 README/源文档给出, 长度 14 aa. |
 
-![R23 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r23-antigen-length-distribution.svg)
+![R23 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r23-antigen-length-distribution.svg)
 
 ### Antigen. R03 AbDesign 1.0
 
@@ -691,7 +712,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 1,360 | 47 | 33 | PDB=1/UniProt=0: 47; PDB=0/UniProt=0: 0 | 68-1,267 aa; 28 unique lengths | Direct sequence / Source-native | datasets_mut.csv (1,303 突变行) + datasets_wt.csv (57 WT 行) 逐行带 `antigen_sequence`, `orig_antigen_chain_id` 与 `pdb_name`. 唯一抗原实体按 (pdb_name, 抗原链) 计 47 个, 唯一抗原序列 33 条, 长度 68-1,267 aa. 抗原序列来自作者整理的亲本结构字段, 直接序列; 每个实体挂其亲本 PDB (Reference PDB, 非逐行突变体结构). |
 
-![R03 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r03-antigen-length-distribution.svg)
+![R03 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r03-antigen-length-distribution.svg)
 
 ### Antigen. R75 AbDesign 2.0
 
@@ -699,7 +720,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 576 | 1 | 1 | Reference PDB: 1; UniProt=unavailable | 123 aa | PDB-derived sequence / Fixed target | 全部 576 条记录针对单一固定抗原 PD-1, 无逐行抗原字段; 抗原序列由参考复合物 5GGS 的 entity 3 (author chain E/F, 123 aa) 重建, 属派生数据. 参考复合物 5GGS 是 pembrolizumab Fab–PD-1 亲本结构, 不是任何突变体的独立结构. 5 张 developability 表 (ac_sins, hydrophobicity, nano_dsf, polyreactivity, production_summary) 是同一批抗体的其他 assay, 其 polyreactivity 表含多种非特异结合物 (BVP, Ovoalbumin, dsDNA, Heparin 等), 不计入抗原实体. |
 
-![R75 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r75-antigen-length-distribution.svg)
+![R75 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r75-antigen-length-distribution.svg)
 
 ### Antigen. R76 HER2-aff-large / Buzz
 
@@ -707,7 +728,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 524,346 | 1 | 1 | Reference PDB: 1; UniProt=unavailable | 592 aa (extracellular domain) | Reference PDB / Fixed target | 全部 524,346 条 CDR-H3 记录针对单一固定抗原 HER2 (酵母表面展示 scFv 用荧光标记 HER2 染色分选), 表内无逐行抗原字段. 参考复合物 1N8Z 是 Herceptin Fab–HER2 结构, 非任何变体的独立结构. 数据还含三个 HER2 相关子集 (mason_et_al, example, 流感对照) 与流感体系, 为其他 assay 记录, 不计入本表. |
 
-![R76 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r76-antigen-length-distribution.svg)
+![R76 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r76-antigen-length-distribution.svg)
 
 ### Antigen. R08 AVIDa-hTNFa
 
@@ -715,7 +736,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 5,580 | 1 | 1 | Reference PDB: 1; UniProt=unavailable | 233 aa | Direct sequence / Fixed target | `antigen_sequences.csv` 只含一条 `TNFa-WT-beads` (人 TNFα 前体, 233 aa) 直接序列; 全部 5,580 行 VHH 记录均针对该单一固定抗原构建体. 参考结构 1TNF 是抗原/参考锚点, 不是任何 VHH–antigen 复合物 PDB. 标签表之外另有 216,225 行无标签 VHH 语料, 不计入本表. |
 
-![R08 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r08-antigen-length-distribution.svg)
+![R08 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r08-antigen-length-distribution.svg)
 
 ### Antigen. R77 TDC AntibodyAff
 
@@ -723,7 +744,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 493 | 313 | 401 | PDB=1/UniProt=0: 313; PDB=0/UniProt=0: 0 | 3-1,676 aa; median 144 aa; 214 unique lengths | Direct sequence / Source-native | `protein_sabdab.csv` 逐行带 `ID2` (源抗原名, hemagglutinin, gp120, EGFR, lysozyme c 等) 与 `X2` (直接序列). 唯一抗原实体按 `ID2` 计 313 个; 唯一抗原序列 401 条 (同名可挂多条序列, 同序列可对多个抗体行). 每行 `ID1` 是抗体侧 PDB 锚点, 抗原侧无独立 PDB 字段, 抗原结构证据依赖所在复合物. 长度 3-1,676 aa, median 144 aa. |
 
-![R77 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r77-antigen-length-distribution.svg)
+![R77 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r77-antigen-length-distribution.svg)
 
 ### Antigen. R78 Akbar SAbDab Kd CSV
 
@@ -731,7 +752,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 493 | 313 | 401 | PDB=1/UniProt=0: 313; PDB=0/UniProt=0: 0 | 3-1,676 aa; median 144 aa; 214 unique lengths | Direct sequence / Source-native | 与 R77 同源 (同一批 TDC/Akbar protein_sabdab 测量, R77 为 dataverse v105 版, R78 为 zenodo 版, 行数与 ID 全同). 逐行带 `Antigen_ID` (313 个唯一名) 与 `Antigen` 直接序列 (401 条唯一). 每行 `Antibody_ID` 是抗体侧 PDB 锚点, 抗原侧结构证据依赖所在复合物. 长度 3-1,676 aa, median 144 aa. 跨源汇总时 R77/R78 应按测量身份去重. |
 
-![R78 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r78-antigen-length-distribution.svg)
+![R78 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r78-antigen-length-distribution.svg)
 
 ### Antigen. R79 MochiBind sampled data
 
@@ -739,7 +760,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 33,454 | 4 | 4 | Reference PDB: 4; UniProt=unavailable | 116-209 aa | Direct sequence / Fixed target | 7 张表对应 4 个活动, 每活动一个固定抗原 (`antigen` 列逐行恒值, 直接序列): pem (PD-1, 123 aa, 9,990 行), pp489 (TIGIT_22-137, 116 aa, 9,630 行), tra (HER2 胞外域片段, 120 aa, 4,254 行), vhh72 (SARS-CoV-2 RBD, 209 aa, 9,580 行). 抗原序列逐行直接给出, 是活动级固定构建体. 参考结构锚点 (6LZG 等) 非逐行复合物. 与 R80 的 AlphaSeq 上游数据共享同一批测量, 跨源应去重. |
 
-![R79 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r79-antigen-length-distribution.svg)
+![R79 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r79-antigen-length-distribution.svg)
 
 ### Antigen. R50 Graphinity
 
@@ -747,7 +768,7 @@ tags:
 | --- | --- | --- | --- | --- | --- | --- |
 | 964,805 | 1,492 | 913 | PDB=1/UniProt=0: 1,116; PDB=0/UniProt=0: 376 | 8-1,467 aa; median 236 aa; 421 unique lengths | PDB-derived sequence / Source-native | 4 张表 (AB-Bind 645, SKEMPI 608, FoldX 942,723, Flex 20,829) 均带 `ag_chain`, 抗原侧从 RCSB FASTA 按链重建. 唯一实体按 (pdb, ag_chain) 计 1,492 个, 其中 1,116 个可取得序列 (913 条唯一), 376 个本地无对应链 fasta (含 7CU4 撤销无替代). 长度 8-1,467 aa, median 236 aa. 抗原链是亲本复合物结构的一部分, 属 Reference PDB 级证据; 无 UniProt 字段. |
 
-![R50 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r50-antigen-length-distribution.svg)
+![R50 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r50-antigen-length-distribution.svg)
 
 ### Antigen. R81 ANTIPASTI
 
@@ -757,7 +778,7 @@ tags:
 
 > 本 dataset sequence length 需通过 structure 重建 sequence 计算. 14 个实体无法重建 sequence length, 为 NA 链或 DNA/RNA 抗原 (4YHP, 5GKR, 6DB9, 2FR4, 6B3K, 6B14, 2R8S 等), 无蛋白链可提取.
 
-![R81 Length 统计](./figures/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r81-antigen-length-distribution.svg)
+![R81 Length 统计](./2026-10-30-3a-src-inventory/2026-10-28-antibody-antigen-affinity-datasets-20-source-inventory/figure-3-r81-antigen-length-distribution.svg)
 
 ## Affinity
 
