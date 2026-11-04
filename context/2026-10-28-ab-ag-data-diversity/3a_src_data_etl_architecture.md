@@ -107,7 +107,7 @@ AFF 支没有跨行逻辑：占位词过滤、一行多值拆分、`col=` 与类
 | `antigen_bound` | 抗原链候选与构建体证据 → 实验片段的有序链列表 | ag#3、ag#4、ag#6 | 无 |
 | `resolve` | `(候选列表, 优先级顺序, on_tie)` → `(选中项, 全部候选, 冲突标记)`；`on_tie ∈ {pick_top, reject}`，可挂 tie-break 函数 | 见 2.1 | 无 |
 | `ids` | 规范序列 → `AB_ID`、`AG_ID`、`3A_ID`，碰撞检查，golden vector | hash、ag#7 | hashlib |
-| `lineage` | 键值 → lineage 字符串；语法固定为 `|` 分隔的 `key=value`（定位、`col=`、类型列、`step=`、各步骤描述） | 各项的 lineage 清单 | 无 |
+| `lineage` | 键值 → lineage 字符串；语法固定为用竖线分隔的 `key=value` 片段（定位、`col=`、类型列、`step=`、各步骤描述） | 各项的 lineage 清单 | 无 |
 
 各调用点的冲突策略在 `resolve` 的参数里配置：ab#3–5 取最高优先级并记录冲突（`pick_top`）；ab#6 同级时取两侧域有效且未解释片段最短的候选（`pick_top` 加 tie-break）；ag#6 同级冲突排除（`reject`）。首版只有 ANARCI 一个工具，ab#3–4 的"多工具一致"一层不可达，跳过。
 
