@@ -1,7 +1,9 @@
 ---
 tags:
-  - conclusion
+  - design
 ---
+
+本设计文件针对的是 [[2026-11-01-20-src-data-etl-todo-list]] 中的 `## 1. Data ETL Specification`.
 
 # VH VL VHH Sequence Cleaning Problem Inventory
 
