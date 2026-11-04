@@ -13,27 +13,27 @@ tags:
 
 ## lineage
 
-- 3a_src_data_etl_modeling.md: current MVP model for the processed Ab-Ag pair dataset.
-- ../3a-src-inventory/src-03-abdesign-1-0.md: sequence and construct inventory.
-- ../3a-src-inventory/src-08-avida-htnfa.md: sequence and tag inventory.
-- ../3a-src-inventory/src-09-flab.md: heterogeneous antibody sequence inventory.
-- ../3a-src-inventory/src-10-abrank.md: antibody and variant sequence inventory.
-- ../3a-src-inventory/src-11-abbibench.md: paired heavy/light sequence inventory.
-- ../3a-src-inventory/src-12-asd-agab-db.md: mixed antibody format inventory.
-- ../3a-src-inventory/src-13-andd.md: mixed chain-slot and nanobody inventory.
-- ../3a-src-inventory/src-14-ab-bind.md: structure-derived antibody sequence inventory.
-- ../3a-src-inventory/src-15-skempi-2-0.md: structure and mutation sequence inventory.
-- ../3a-src-inventory/src-16-guest.md: mixed Fab, Fv, scFv, and VHH inventory.
-- ../3a-src-inventory/src-20-sabdab-sabdab2.md: SAbDab antibody chain inventory.
-- ../3a-src-inventory/src-23-mit-ll-alphaseq.md: complete scFv and linker inventory.
-- ../3a-src-inventory/src-50-graphinity.md: mixed structure-derived construct inventory.
-- ../3a-src-inventory/src-74-abdesign-2-0.md: constant-region and His-tag inventory.
-- ../3a-src-inventory/src-75-her2-aff-large-buzz.md: CDR-only sequence inventory.
-- ../3a-src-inventory/src-76-tdc-antibodyaff.md: duplicated-slot and linker inventory.
-- ../3a-src-inventory/src-77-akbar-sabdab-kd-csv.md: duplicated-slot and linker inventory.
-- ../3a-src-inventory/src-78-mochibind-sampled-data.md: scFv and VHH inventory.
-- ../3a-src-inventory/src-79-alphabind.md: scFv and VHH inventory.
-- ../3a-src-inventory/src-80-antipasti.md: structure-derived mixed construct inventory.
+- [[3a_src_data_etl_modeling]]: current MVP model for the processed Ab-Ag pair dataset.
+- [[src-03-abdesign-1-0-inventory]]: direct antigen sequence with reference-PDB provenance.
+- [[src-08-avida-htnfa-inventory]]: fixed TNF-alpha target with direct sequence.
+- [[src-09-flab-inventory]]: mixed fixed targets and AbRank antigen sequences.
+- [[src-10-abrank-inventory]]: direct antigen sequences with PDB anchors.
+- [[src-11-abbibench-inventory]]: benchmark-level reference antigens reconstructed from structures.
+- [[src-12-asd-agab-db-inventory]]: large source-native antigen sequence collection.
+- [[src-13-andd-inventory]]: direct sequences, multi-chain separators, and missing values.
+- [[src-14-ab-bind-inventory]]: parent-PDB antigen entities without row-level sequences.
+- [[src-15-skempi-2-0-inventory]]: multi-chain partner antigens and reference structures.
+- [[src-16-guest-inventory]]: single-chain and multi-chain antigens reconstructed from PDB/FASTA.
+- [[src-20-sabdab-sabdab2-inventory]]: structure-chain antigens, NA chains, and non-protein entities.
+- [[src-23-mit-ll-alphaseq-inventory]]: fixed 14-aa peptide target without row-level antigen fields.
+- [[src-50-graphinity-inventory]]: antigen chains reconstructed from structure-linked FASTA.
+- [[src-74-abdesign-2-0-inventory]]: fixed PD-1 target derived from a reference structure.
+- [[src-75-her2-aff-large-buzz-inventory]]: fixed HER2 extracellular-domain target.
+- [[src-76-tdc-antibodyaff-inventory]]: direct source-native antigen sequences and entity names.
+- [[src-77-akbar-sabdab-kd-csv-inventory]]: direct source-native antigen sequences and duplicate source snapshot.
+- [[src-78-mochibind-sampled-data-inventory]]: four fixed antigen constructs with direct sequences.
+- [[src-79-alphabind-inventory]]: fixed campaign-level antigen constructs without bundled sequences.
+- [[src-80-antipasti-inventory]]: PDB-chain antigen recovery with unresolved NA/non-protein entities.
 
 ## relation
 
