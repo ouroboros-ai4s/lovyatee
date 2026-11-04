@@ -15,11 +15,11 @@ tags:
 
 ## 1. Data ETL Specification
 
-- [x] 固定 [`3A = (3A_ID, antibody, antigen, affinity[])`](2026-10-28-ab-ag-data-diversity/3a_src_data_etl_modeling.md).
-- [x] 定义 [VH/VL/VHH 序列清洗、signal peptide、constant region、linker、His-tag 处理规则](2026-10-28-ab-ag-data-diversity/3a_src_data_etl_problem_ab.md).
-- [x] 定义 [抗原实验片段的序列和结构截取规则](2026-10-28-ab-ag-data-diversity/3a_src_data_etl_problem_ag.md).
-- [x] 定义 `AB_ID`、`AG_ID`、`3A_ID` 的稳定 hash.
-- [x] 定义 affinity 的 `label_type`、单位、截断符号、assay、condition、replicate、source 保存方式.
+- [x] 固定 [`3A = (3A_ID, antibody, antigen, affinity[])`](./2026-10-28-ab-ag-data-diversity/3a_src_data_etl_modeling.md).
+- [x] 定义 [VH/VL/VHH 序列清洗、signal peptide、constant region、linker、His-tag 处理规则](./2026-10-28-ab-ag-data-diversity/3a_src_data_etl_problem_ab.md).
+- [x] 定义 [抗原实验片段的序列和结构截取规则](./2026-10-28-ab-ag-data-diversity/3a_src_data_etl_problem_ag.md).
+- [x] 定义 `AB_ID`、`AG_ID`、`3A_ID` 的稳定 [hash](./2026-10-28-ab-ag-data-diversity/3a_src_data_etl_hash.md).
+- [x] 定义 [affinity 的 `label_type`、单位、截断符号、assay、condition、replicate、source 保存方式](./2026-10-28-ab-ag-data-diversity/3a_src_data_etl_problem_aff.md).
 
 ## 2. Data ETL SRC-by-SRC
 
