@@ -19,7 +19,7 @@ tags:
 - [x] 定义 [VH/VL/VHH 序列清洗、signal peptide、constant region、linker、His-tag 处理规则](2026-10-28-ab-ag-data-diversity/3a_src_data_etl_problem_ab.md).
 - [x] 定义 [抗原实验片段的序列和结构截取规则](2026-10-28-ab-ag-data-diversity/3a_src_data_etl_problem_ag.md).
 - [x] 定义 `AB_ID`、`AG_ID`、`3A_ID` 的稳定 hash.
-- [ ] 定义 affinity 的 `label_type`、单位、截断符号、assay、condition、replicate、source 保存方式.
+- [x] 定义 affinity 的 `label_type`、单位、截断符号、assay、condition、replicate、source 保存方式.
 
 ## 2. Data ETL SRC-by-SRC
 
@@ -29,7 +29,7 @@ tags:
 - [ ] `R08 AVIDa-hTNFa` [src-08-avida-htnfa.md](2026-10-30-3a-src-inventory/src-08-avida-htnfa-inventory.md).
 - [ ] `R74 AbDesign 2.0` [src-74-abdesign-2-0.md](2026-10-30-3a-src-inventory/src-74-abdesign-2-0-inventory.md).
 - [ ] `R76 TDC AntibodyAff` [src-76-tdc-antibodyaff.md](2026-10-30-3a-src-inventory/src-76-tdc-antibodyaff-inventory.md).
-- [ ] `R77 Akbar SAbDab Kd CSV` [src-77-akbar-sabdab-kd-csv.md](2026-10-30-3a-src-inventory/src-77-akbar-sabdab-kd-csv-inventory.md), (与 R76 做逐行重复验证，只保留一个 canonical measurement).
+- [ ] `R77 Akbar SAbDab Kd CSV` [src-77-akbar-sabdab-kd-csv.md](2026-10-30-3a-src-inventory/src-77-akbar-sabdab-kd-csv-inventory.md).
 - [ ] `R80 ANTIPASTI` [src-80-antipasti.md](2026-10-30-3a-src-inventory/src-80-antipasti-inventory.md).
 
 ### 第二批: 中型、多构建体或需要结构重建
@@ -48,7 +48,7 @@ tags:
 - [ ] `R79 AlphaBind public experiments` [src-79-alphabind.md](2026-10-30-3a-src-inventory/src-79-alphabind-inventory.md).
 - [ ] `R23 MIT-LL AlphaSeq` [src-23-mit-ll-alphaseq.md](2026-10-30-3a-src-inventory/src-23-mit-ll-alphaseq-inventory.md), (predicted affinity 与空 label 分开处理).
 - [ ] `R78 MochiBind sampled data` [src-78-mochibind-sampled-data.md](2026-10-30-3a-src-inventory/src-78-mochibind-sampled-data-inventory.md), (作为 AlphaBind 子集做重复检测).
-- [ ] `R10 AbRank` [src-10-abrank.md](2026-10-30-3a-src-inventory/src-10-abrank-inventory.md), (与 R09 内嵌 AbRank 数据做 measurement-level 去重).
+- [ ] `R10 AbRank` [src-10-abrank.md](2026-10-30-3a-src-inventory/src-10-abrank-inventory.md).
 - [ ] `R09 FLAb` [src-09-flab.md](2026-10-30-3a-src-inventory/src-09-flab-inventory.md), (规模大，包含多个重复来源和多种 antibody format).
 - [ ] `R12 ASD / AgAb DB` [src-12-asd-agab-db.md](2026-10-30-3a-src-inventory/src-12-asd-agab-db-inventory.md), (最大汇编源，最后处理，避免重复计数).
 
