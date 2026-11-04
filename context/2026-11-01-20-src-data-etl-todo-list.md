@@ -37,20 +37,20 @@ tags:
 - [ ] `R13 ANDD` [src-13-andd.md](2026-10-30-3a-src-inventory/src-13-andd-inventory.md).
 - [ ] `R11 AbBiBench` [src-11-abbibench.md](2026-10-30-3a-src-inventory/src-11-abbibench-inventory.md).
 - [ ] `R16 Guest antibody benchmark` [src-16-guest.md](2026-10-30-3a-src-inventory/src-16-guest-inventory.md).
-- [ ] `R14 AB-Bind` [src-14-ab-bind.md](2026-10-30-3a-src-inventory/src-14-ab-bind-inventory.md), (需要判断 mutation record 是否能可靠重建抗体序列).
-- [ ] `R15 SKEMPI 2.0` [src-15-skempi-2-0.md](2026-10-30-3a-src-inventory/src-15-skempi-2-0-inventory.md), (需要处理 WT/mutant、突变字符串和 reference structure).
-- [ ] `R20 SAbDab / SAbDab2` [src-20-sabdab-sabdab2.md](2026-10-30-3a-src-inventory/src-20-sabdab-sabdab2-inventory.md), (本身无 affinity，作为结构和序列解析资源，不直接产生 3A affinity pair).
-- [ ] `R50 Graphinity` [src-50-graphinity.md](2026-10-30-3a-src-inventory/src-50-graphinity-inventory.md), (computational ddG 单独保存 label type，不与实验 Kd 混合).
-- [ ] `R75 HER2-aff-large / Buzz` [src-75-her2-aff-large-buzz.md](2026-10-30-3a-src-inventory/src-75-her2-aff-large-buzz-inventory.md), (主要只有 CDR-H3，不能直接构成完整 Fv/VHH).
+- [ ] `R14 AB-Bind` [src-14-ab-bind.md](2026-10-30-3a-src-inventory/src-14-ab-bind-inventory.md).
+- [ ] `R15 SKEMPI 2.0` [src-15-skempi-2-0.md](2026-10-30-3a-src-inventory/src-15-skempi-2-0-inventory.md).
+- [ ] `R20 SAbDab / SAbDab2` [src-20-sabdab-sabdab2.md](2026-10-30-3a-src-inventory/src-20-sabdab-sabdab2-inventory.md).
+- [ ] `R50 Graphinity` [src-50-graphinity.md](2026-10-30-3a-src-inventory/src-50-graphinity-inventory.md).
+- [ ] `R75 HER2-aff-large / Buzz` [src-75-her2-aff-large-buzz.md](2026-10-30-3a-src-inventory/src-75-her2-aff-large-buzz-inventory.md).
 
 ### 第三批: 大型或存在跨源重复
 
 - [ ] `R79 AlphaBind public experiments` [src-79-alphabind.md](2026-10-30-3a-src-inventory/src-79-alphabind-inventory.md).
-- [ ] `R23 MIT-LL AlphaSeq` [src-23-mit-ll-alphaseq.md](2026-10-30-3a-src-inventory/src-23-mit-ll-alphaseq-inventory.md), (predicted affinity 与空 label 分开处理).
-- [ ] `R78 MochiBind sampled data` [src-78-mochibind-sampled-data.md](2026-10-30-3a-src-inventory/src-78-mochibind-sampled-data-inventory.md), (作为 AlphaBind 子集做重复检测).
+- [ ] `R23 MIT-LL AlphaSeq` [src-23-mit-ll-alphaseq.md](2026-10-30-3a-src-inventory/src-23-mit-ll-alphaseq-inventory.md).
+- [ ] `R78 MochiBind sampled data` [src-78-mochibind-sampled-data.md](2026-10-30-3a-src-inventory/src-78-mochibind-sampled-data-inventory.md).
 - [ ] `R10 AbRank` [src-10-abrank.md](2026-10-30-3a-src-inventory/src-10-abrank-inventory.md).
-- [ ] `R09 FLAb` [src-09-flab.md](2026-10-30-3a-src-inventory/src-09-flab-inventory.md), (规模大，包含多个重复来源和多种 antibody format).
-- [ ] `R12 ASD / AgAb DB` [src-12-asd-agab-db.md](2026-10-30-3a-src-inventory/src-12-asd-agab-db-inventory.md), (最大汇编源，最后处理，避免重复计数).
+- [ ] `R09 FLAb` [src-09-flab.md](2026-10-30-3a-src-inventory/src-09-flab-inventory.md).
+- [ ] `R12 ASD / AgAb DB` [src-12-asd-agab-db.md](2026-10-30-3a-src-inventory/src-12-asd-agab-db-inventory.md).
 
 ## 3. Data ETL Merge
 
