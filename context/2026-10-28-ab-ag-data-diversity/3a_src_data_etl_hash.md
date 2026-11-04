@@ -3,9 +3,9 @@ tags:
   - design
 ---
 
-本设计文件针对的是 [[2026-11-01-20-src-data-etl-todo-list]] 中的 `## 1. Data ETL Specification`.
-
 # AB_ID AG_ID 3A_ID Hash Scheme
+
+本设计文件针对的是 [[2026-11-01-20-src-data-etl-todo-list]] 中的 `## 1. Data ETL Specification`.
 
 ## time
 

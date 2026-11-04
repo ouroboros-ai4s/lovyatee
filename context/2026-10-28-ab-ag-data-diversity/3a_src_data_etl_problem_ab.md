@@ -3,9 +3,9 @@ tags:
   - design
 ---
 
-本设计文件针对的是 [[2026-11-01-20-src-data-etl-todo-list]] 中的 `## 1. Data ETL Specification`.
-
 # VH VL VHH Sequence Cleaning Problem Inventory
+
+本设计文件针对的是 [[2026-11-01-20-src-data-etl-todo-list]] 中的 `## 1. Data ETL Specification`.
 
 ## time
 
@@ -163,6 +163,7 @@ AB_ID = hash(canonical_ab)
 - FASTA 标题、换行、空白和原始字段外壳不参与 hash。
 - `None` 的槽位仍保留在 canonical 字符串中，避免不同 H/L 槽位状态发生身份碰撞。
 - canonical 字符串、最终 hash 和必要的规范化信息写入 `lineage[]` 以便复现。
+
 #### 1. 输入槽位和缺失值如何解析
 
 - 同一条源记录中的 `heavy` 和 `light` 字段直接组成一个 H/L pair，分别映射到 `vh_sequence` 和 `vl_sequence`；记录行号或原始记录 ID 保持配对关系。
