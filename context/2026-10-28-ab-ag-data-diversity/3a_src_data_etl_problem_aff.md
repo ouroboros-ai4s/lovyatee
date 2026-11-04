@@ -105,3 +105,142 @@ None.
 - [R78 MochiBind sampled data](../2026-10-30-3a-src-inventory/src-78-mochibind-sampled-data-inventory.md)
 - [R79 AlphaBind public experiments](../2026-10-30-3a-src-inventory/src-79-alphabind-inventory.md)
 - [R80 ANTIPASTI](../2026-10-30-3a-src-inventory/src-80-antipasti-inventory.md)
+
+### 方案
+
+#### 1. 无值或占位的记录是否构成 observation
+
+扫描 `G:\abag-datasets` 后，"无值"有五种含义，只有第一种是"没有做实验"：
+
+| 类 | 含义 | 例子 | 处理 |
+| --- | --- | --- | --- |
+| 1. 没有测量 | 来源是序列或结构库，从未带亲和力 | R13 的 39,235 行（`Reason_Code=not_reported`）、R08 `corpus-hTNFa.csv` 的 216,225 行、R20 整源 | 不成立 |
+| 2. 测了另一种量 | 值在原始表里，聚合表只取了 IC50 和 KD | R10 的 CATNAP 1,032 行（只有 IC80）、AbCoV 27 行（只有 EC50） | 第 2 节适配器从 R10 自带的 `Raw_data_processing/Original_data` 按原 label 产出 observation；聚合表中的空行本身不产出 |
+| 3. 测了，失败 | 占位符表示 assay 没有出结果，同行其他列常有值 | R09 kothiwal 的 `Fail`、R15 的 `unf`、R12 的 `I.C.` | 不成立 |
+| 4. 检测不到结合 | 有信息：弱于检测限，但没有数值 | R15 的 `n.b`/`n.b.`（278 行）、R74 的 `binding=0`、R08 与 R75 的 `label=0` | 成立，为定性 observation |
+| 5. 空位，原因未记录 | 来源不说明为什么为空 | R23 的空 `Pred_affinity`、R79 的空 `alphaseq_affinity`、R74 的空 `binding`、R12 的字符串 `nan` | 不成立 |
+
+一条 observation 成立，需满足以下任一项：
+
+- 可解析的精确数值。
+- 带 `>` 或 `<` 的边界值，例如 R12 的 `>8.8`、R15 的 `>1E-04`。
+- 来源明确的定性判定：binary（含 0）、ordinal、`n.b`。
+
+三者都不满足则不成立。R74 中 `binding=1` 但无 KD 的 80 行按 binary 成立。
+
+规则：
+
+- 空不是 negative。空值、`Fail`、`nan` 不转换为 0 或 `n.b`。
+- 一行多列时逐列判断。R09 kothiwal 的 EC50 为 `Fail` 而 SPR KD 有值时，EC50 不成立，KD 成立。
+- R10 空行的 `Aff_op` 恒为 `=`，是填充值，不作为有值的证据。
+- 占位词由 SRC 适配器列出，不做全局映射。同一个符号含义随来源变化：`nan` 在 R12 是缺失，`n.b` 在 R15 是信息，`Fail` 在 R09 是失败。适配器未列出的非数值字符串按不成立处理。
+- 一个 pair 的 observation 全部不成立时，不生成 `3A`。
+- 不成立的记录留在原始数据集，不进入 processed dataset，也不新建 audit 目录。成立的 observation 在 `lineage` 中记录原始列名和原始字符串，例如 `n.b.`、`IC80`。
+
+初始占位词表：
+
+| SRC | 不成立 | 成立（边界或定性） |
+| --- | --- | --- |
+| R08 | `corpus-hTNFa.csv`（无 label 列） | `label` 0/1 |
+| R09 | `Fail` | |
+| R10 | 空串、`NA` | |
+| R12 | `nan`、`I.C.` | `>8.8` |
+| R13 | `\`、`Reason_Code=not_reported` | |
+| R15 | `unf` | `n.b`、`n.b.`、`>`/`<` 值 |
+| R23、R79 | 空值 | |
+| R74 | `binding` 空 | `binding` 0/1 |
+| R75 | | `label` 0/1 |
+
+相关 inventory：
+
+- [R08 AVIDa-hTNFa](../2026-10-30-3a-src-inventory/src-08-avida-htnfa-inventory.md)
+- [R09 FLAb](../2026-10-30-3a-src-inventory/src-09-flab-inventory.md)
+- [R10 AbRank](../2026-10-30-3a-src-inventory/src-10-abrank-inventory.md)
+- [R12 ASD / AgAb DB](../2026-10-30-3a-src-inventory/src-12-asd-agab-db-inventory.md)
+- [R13 ANDD](../2026-10-30-3a-src-inventory/src-13-andd-inventory.md)
+- [R15 SKEMPI 2.0](../2026-10-30-3a-src-inventory/src-15-skempi-2-0-inventory.md)
+- [R20 SAbDab / SAbDab2](../2026-10-30-3a-src-inventory/src-20-sabdab-sabdab2-inventory.md)
+- [R23 MIT-LL AlphaSeq](../2026-10-30-3a-src-inventory/src-23-mit-ll-alphaseq-inventory.md)
+- [R74 AbDesign 2.0](../2026-10-30-3a-src-inventory/src-74-abdesign-2-0-inventory.md)
+- [R75 HER2-aff-large / Buzz](../2026-10-30-3a-src-inventory/src-75-her2-aff-large-buzz-inventory.md)
+- [R79 AlphaBind public experiments](../2026-10-30-3a-src-inventory/src-79-alphabind-inventory.md)
+
+相关设计：[processed Ab-Ag pair dataset model](3a_src_data_etl_modeling.md)。
+
+#### 2. 一条源记录含多个值时如何拆成 observation
+
+扫描 20 个 SRC 后，一行里的多个值分为三种，只有第二种各自成为 observation。R03、R08、R11、R14、R23、R76、R77 每行只有一个读数（R03、R12 为 `affinity` + `affinity_type` 的长表），R20 没有 affinity。
+
+**粒度**：一条 observation 对应一个原始读数，即一行中的一列。同一行的多条 observation 共享行号，靠列名区分，`lineage` 定位到文件、表、行、列，例如 `SRC_R09 | kothiwal2025htp_DCC_spr.csv | row=4 | col=SPR kinetics - KD (nM)`。
+
+**1. 同一次测量的不同写法：派生值，不单列**
+
+派生值是同一行里可以由另一列用固定算法算出的值：单位换算、取对数、ΔG = RT·ln Kd、按阈值判 0/1、整列拷贝。只存产生它们的独立读数。
+
+| 类型 | 已核对的例子 |
+| --- | --- |
+| 拷贝 | R09 `fitness`（抽查 7 张表，全等于 label 列）；R12 `processed_measurement`（1,177,819 行全等于 `affinity`）；R15 `*_parsed`；R10 `Aff_op`（解析自值字符串里的 `>`/`<`） |
+| 换算、取对数 | R09 同一表里并列的 `-log`、`-ln`、`KD (M)`、`KD (nM)`；R10 `log_Aff`（Kd 行等于 log10 Kd(nM)，IC50 行等于 log10 IC50 加固定偏移）、`log(Kd_ratio)`（与 `escape` 的 Spearman 为 0.9999）；R50 `foldx_ddg`（等于 `wt_foldx_dg` − `mut_foldx_dg`）；R79 `parental_aff_margin`（等于 `alphaseq_affinity` − `parental_mean_aff`） |
+| 由 Kd 换算的 ΔG | R16（42 行，最大误差 0.5 kcal/mol）；R80（1,172 行在 298 K 下吻合，其余 94 行中 83 行用行内温度吻合）；R13 实测同时有 Kd 与 ΔG 的 907 行（839 行误差小于 0.1 kcal/mol） |
+| 阈值标签 | R75 流感集 `*_label`（label=0 的 `*_mean` 恒为下限 7.0 或 6.0）；R75 主表 `label`（等于 `class=high`）；R74 `binding`（有 KD 的 389 行恒为 1） |
+
+例外：派生标签是该条目的唯一读数时保留。R74 中 KD 缺失的 179 行里 `binding` 是唯一读数；R75 的 mason_et_al 只有 `label`；R13 只有 ΔG 的 93 行（实测）里 ΔG 是唯一读数。R13 预测值的 452 行未核对，适配器阶段按同一判据核对。
+
+不是本 pair 的读数也不产出：R79 的 `parental_mean_aff` 是亲本的均值，`avg_off_target_affinity` 的聚合对象来源未定义。
+
+**2. 同一行的独立读数：各成一条 observation**
+
+- R09 kothiwal：SPR KD 与 Cell Display EC50，assay 不同，各一条。
+- R10：AbCoV 有 293 行 IC50 与 Kd 并存；RBD-escape 有 20,500 行 Kd 与 `escape` 并存。
+- R75 流感集：一条重链对应多个抗原（CR6261 为 h1、h9，CR9114 为 h1、h3、fluB），每个抗原的 `*_mean` 各一条，分属不同 pair。
+- R15：每行的 `Affinity_mut` 属于突变体 pair，`Affinity_wt` 属于 WT pair，见下。
+
+**R15 的突变体与 WT 拆分**
+
+- `Affinity_mut` 产出到突变体 pair，突变位于抗体侧还是抗原侧、序列如何重建，按 problem_ab 第 9 项和 problem_ag 第 5 项；`Affinity_wt` 产出到 WT pair。
+- 7,085 行只有 618 组不同的（复合物、Method、Temperature、WT Kd），6,919 行与别的行共享 WT 值，最大一组 281 行。WT observation 按这四项折叠，每组只产出一条，`lineage` 记录全部来源行。
+- WT 序列无法重建（C 类）时不产出 WT observation，突变体 observation 不受影响。
+
+**R50 的 Flex 表**
+
+两种打分函数的相关系数仅 0.025（`flexddg_ddg` 与 `flexddg_ddg-talaris2014`），只取 `flexddg_ddg`，即 inventory 采用的那列。`flexddg_ddg-talaris2014-gam` 与它相关系数为 1.000，视为拷贝。
+
+**3. 不是亲和力的量**
+
+kon、koff、ka、kdis、dH、dS、r2，以及 QC、NGS 计数、表达量，不单列。通则：这些动力学和热力学量仅当该条目没有任何其他可用 label 时才作为 observation 保留。
+
+核对结果：R74（389 行）、R15（突变体侧 2,273 行，WT 侧 2,289 行）、R09 kothiwal（688 行）去掉后都还有 Kd 或 EC50，不丢条目。唯一例外是 R12 `htm` 的 3 行 `ka (1/Ms)`（515000、25000、411000），它们所在的 pair 在 R12 里没有别的行，按通则保留。`label_type` 如何容纳 `ka` 留给第 3 项。
+
+**各 SRC 的产出**
+
+| SRC | 产出的读数列 | 不产出 |
+| --- | --- | --- |
+| R09 | 每张表的原始 label 列；kothiwal 另有 EC50 | `fitness`、取对数和单位换算列、ka/kdis、QC、NGS 计数 |
+| R10 | `IC50`、`Affinity_Kd`、`escape`（保留原始值字符串，含 `>`） | `log_Aff`、`log(Kd_ratio)`、`Aff_op` |
+| R12 | `affinity`（按 `affinity_type`） | `processed_measurement` |
+| R13 | Kd；无 Kd 时的 ΔG | 与 Kd 同行的 ΔG |
+| R15 | `Affinity_mut`、`Affinity_wt` | `*_parsed`、kon/koff/dH/dS |
+| R16 | Kd | ΔG |
+| R50 | `foldx_ddg`、`flexddg_ddg` | 绝对 dG 列、其他 Flex 变体 |
+| R74 | `kd`；`kd` 缺失时 `binding` | 有 `kd` 时的 `binding`、kon/koff/r2 |
+| R75 | 流感集各抗原 `*_mean`；主表 `class`；外部集 `affinity`，缺失时 `label` | 流感集 `*_label`；主表 `label` |
+| R78、R79 | `alphaseq_affinity` | `parental_*`、`avg_off_target_affinity`；`predicted_affinity` 见第 4 项 |
+| R80 | `affinity` | `delta_g` |
+
+相关 inventory：
+
+- [R03 AbDesign 1.0](../2026-10-30-3a-src-inventory/src-03-abdesign-1-0-inventory.md)
+- [R09 FLAb](../2026-10-30-3a-src-inventory/src-09-flab-inventory.md)
+- [R10 AbRank](../2026-10-30-3a-src-inventory/src-10-abrank-inventory.md)
+- [R12 ASD / AgAb DB](../2026-10-30-3a-src-inventory/src-12-asd-agab-db-inventory.md)
+- [R13 ANDD](../2026-10-30-3a-src-inventory/src-13-andd-inventory.md)
+- [R15 SKEMPI 2.0](../2026-10-30-3a-src-inventory/src-15-skempi-2-0-inventory.md)
+- [R16 Guest antibody benchmark](../2026-10-30-3a-src-inventory/src-16-guest-inventory.md)
+- [R50 Graphinity](../2026-10-30-3a-src-inventory/src-50-graphinity-inventory.md)
+- [R74 AbDesign 2.0](../2026-10-30-3a-src-inventory/src-74-abdesign-2-0-inventory.md)
+- [R75 HER2-aff-large / Buzz](../2026-10-30-3a-src-inventory/src-75-her2-aff-large-buzz-inventory.md)
+- [R78 MochiBind sampled data](../2026-10-30-3a-src-inventory/src-78-mochibind-sampled-data-inventory.md)
+- [R79 AlphaBind public experiments](../2026-10-30-3a-src-inventory/src-79-alphabind-inventory.md)
+- [R80 ANTIPASTI](../2026-10-30-3a-src-inventory/src-80-antipasti-inventory.md)
+
+相关设计：[processed Ab-Ag pair dataset model](3a_src_data_etl_modeling.md)。
