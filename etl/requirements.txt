@@ -1,0 +1,19 @@
+# uv pip freeze 输出; 首行 stderr 提示已删除
+# HMMER 3.4 不经 pip 安装，位于 /data_new/ywy/tools/hmmer/usr/bin (PATH 由 etl/env.sh 提供)
+# 生成的命令: uv pip freeze
+anarci==2026.2.13.2
+biopython==1.88
+daft==0.7.26
+duckdb==2.0.0
+gemmi==0.7.5
+getdaft==0.5.0
+iniconfig==2.3.1
+numpy==2.5.4
+packaging==26.3
+pip==24.0
+pluggy==1.7.0
+pyarrow==25.0.1
+pygments==2.21.0
+pytest==9.2.0
+tqdm==4.67.3
+uv==0.13.7
