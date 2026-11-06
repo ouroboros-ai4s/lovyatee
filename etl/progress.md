@@ -298,3 +298,30 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 - observation 898,936 条。
 - 排除构成：`no_observation` 2,417,179（行内无可解析读数）、`no_antigen_binding` 1,292,661（无来源序列的固定靶表，决策文件 C3）。
 - 累计修掉 8 个数据问题：列名识别 3 处（`ag_seq` / `VHH_sequence` / `ANT Binding`）、表枚举重复、读取路径、`fitness` 处置、DISCLAIMER 行识别、`SOURCE_ROWS` 口径。
+
+## 最终验收（2026-11-06 11:13 host 时间）
+
+| 项 | 结果 |
+| --- | --- |
+| 单源 check（19 个） | 全部 ok |
+| 全局 merge | `n_pairs=3,785,871`，`n_3a=1,509,128`，`n_obs=4,459,976`，`n_rejected=0` |
+| 复现 | 同输入再跑一次，`3a/*.parquet` 逐字节相同，`manifest.json` 相同 |
+| qa_sample | 200 条，4 层（direct / mutation_rebuild / split / trim）各抽 3 条，`3A_ID`、VH/VL 长度、抗原链、obs 数与 lineage 定位均对得上 |
+| `no_domain` 覆盖率 | R08 0.018%、R74 0%、R76 0%，最高 0.018%，不需要第二个可变域工具 |
+
+**一处共享模块缺陷，已修（`etl/core/merge.py`）**：选结构时 `row_number` 的排序键只有
+`(rank, structure_id, src)`。同一 `3A` 下若多条记录引用同一结构但 `chain_map` 不同，
+三者并列 → 取哪条不确定 → 两次 merge 的 `chain_map` 与分片字节不同（语义等价但不可复现）。
+修复：排序键追加 `chain_map` 与 `record_key`；`test_merge.py` 新增
+`test_structure_pick_is_deterministic_across_runs` 覆盖。
+
+**排除占比过半的 SRC（逐个复查，结论：条件成立）**
+
+| SRC | 原因码 | 占比 | 复查结论 |
+| --- | --- | --- | --- |
+| R08 | `no_observation` | 97.5% | `corpus-hTNFa.csv` 216,225 行整表无 label，按 aff 方案第 1 项不成立 |
+| R09 | `no_observation` | 52.5% | 86 张表里多数只有派生列（`fitness`/`neg_log`/`-log10`）或该行无读数；独立读数已按方案各成一条 |
+| R10 | `no_antigen_sequence` | 56.3% | `Source=RBD-escape` 的 192,559 行 `Ag_seq` 是突变标记串（`SARS-CoV2_(A410E)`），不是序列 |
+| R13 | `no_antigen_sequence` | 74.2% | inventory 已记 48,800 行中仅 12,617 行有 `Ag_Seq`，实测 36,183 行缺失，完全吻合 |
+| R15 | `no_antigen_binding` | 82.9% | SKEMPI 2.0 是通用 PPI 突变库，抗体–抗原只是子集 |
+| R23 | `no_antigen_binding` | 75.0% | AlphaNeg1~3 是负对照，没有来源序列（决策文件 R23 C2） |
