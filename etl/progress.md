@@ -255,3 +255,18 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
   2. engelhart2022、tsuruta2024 两表、phillips2021、adams2017、cognano 等固定靶表没有任何可核验的抗原序列来源，按 `no_antigen_binding` 排除（决策文件 R09 C3）。这与 plan 的 "固定目标需要决策文件" 一致：没有可核验证据的就不编。
 - 决策文件 `etl/decisions/R09.yaml`：3 条 claim，通过自查。
 - 第一次跑把 `ag_seq` 只认成一个列名，491 万行被误判 `no_antigen_sequence`；第二次扩展到 `antigen_seq` 等列名后仍缺固定靶，第三次加上 `FIXED_ANTIGEN` 与 `no_antigen_binding` 分支。
+
+### R12 ASD / AgAb DB — 完成
+
+- 数据：20 个 parquet 分片合计 1,177,819 行，与 inventory 一致。
+- 抗体：`chains.antibody_chains` 的 (类型, 序列) 对，`heavy` / `light` / `scfv` / `nanobody`；抗原：`chains.target_chains`。
+- 各阶段：adapt 643,807 records / 534,012 rejects（`no_observation`，`affinity` 为 `nan`/`I.C.`/空）→ ab 334,580 键（334,568 ok）→ ag 9,985 键 → assemble 643,792 pair。
+- observation 643,792 条，`affinity_type` 分布：bool 285,033、alphaseq 190,474、-log Kd (M) 158,724、log_enrichment 3,452、**delta_g 2,725**、Kd (nM) 832、ddg 670、elisa_mut_to_wt_ratio 658 —— `delta_g` 保留并以 `affinity_type=delta_g` 写进 lineage，与 plan 要求一致。
+- `processed_measurement` 不产出。
+- 单源 merge：`n_pairs=643,792, n_3a=539,738, sum len(affinity)=643,792`，断言全过。
+
+### 第二批收尾 merge
+
+`/data_new/ywy/etl_out/batch2_check`（17 个 SRC，R09 未完成时）：
+`n_pairs=2,245,133, n_3a=1,101,432, n_obs=2,917,248`，断言全过。
+`qa_sample` 80 条，4 个层（direct / mutation_rebuild / split / trim）各抽 2 条核对：`3A_ID`、VH/VL 长度、抗原链数、obs 数与 lineage 的 `SRC_Rxx + 文件 + row=` 均对得上。
