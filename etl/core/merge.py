@@ -127,10 +127,14 @@ def _group(con: duckdb.DuckDBPyConnection) -> None:
                 select "3A_ID", %s_structure,
                        row_number() over (partition by "3A_ID" order by
                            coalesce(%s_structure_rank, %d),
-                           coalesce(%s_structure.structure_id, ''), src) as rn
+                           coalesce(%s_structure.structure_id, ''), src,
+                           -- chain_map 参与决胜：同一结构被多条记录以不同链映射引用时，
+                           -- 只按前三个键排序会并列，取哪条不确定，重跑结果不一致
+                           coalesce(%s_structure.chain_map, ''),
+                           record_key) as rn
                 from pairs where valid and %s_structure is not null
             ) where rn = 1
-        """ % (side, side, side, side, RANK_MAX, side, side))
+        """ % (side, side, side, side, RANK_MAX, side, side, side))
     _run(con, """
         create or replace table grouped as
         select p."3A_ID",
