@@ -1,0 +1,25 @@
+{
+  "src": "SRC_R11",
+  "note": "JSON 是 YAML 1.2 的子集，运行期只 json.loads。",
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "本 SRC 的抗原序列由随包复合物结构按 metadata.json 的 pdb_path 与 antigen_chains 重建，不使用逐行抗原字段（affinity 表本身没有抗原列）。",
+      "applies_to": {"file": "Antibody_Binding_Benchmark_Dataset/metadata.json"},
+      "evidence": {
+        "file": "Antibody_Binding_Benchmark_Dataset/README.md",
+        "quote": "This dataset contains the sequences of mutants, experimentally measured affinity values, and the structures of antigen-antibody complexes."
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "`binding_score` 是逐文件归一化的亲和力打分，表本身不给单位与 assay，因此只在 observation 的 lineage 写列名，不补单位、不换算。",
+      "applies_to": {"file": "Antibody_Binding_Benchmark_Dataset/binding_affinity/1mlc_benchmarking_data.csv",
+                     "col": "binding_score"},
+      "evidence": {
+        "file": "Antibody_Binding_Benchmark_Dataset/binding_affinity/1mlc_benchmarking_data.csv",
+        "quote": "heavy_chain_seq,binding_score,light_chain_seq"
+      }
+    }
+  ]
+}

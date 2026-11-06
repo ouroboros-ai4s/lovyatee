@@ -1,0 +1,170 @@
+"""共享 resolver：evidence → ab_entity / ag_entity。供各 adapter 复用，不含 SRC 分支。
+
+evidence 只放影响清洗、且要进缓存键的内容（小字符串）。体积大的 parent 编号表放在
+record 的 ctx 里，不进键，只在 resolver 内使用。
+
+ab evidence:
+  {"seqs": {"h": raw, "l": raw}, "hints": {"h": {...}, "l": {...}},
+   "placeholders": [...], "edits": [...], "parent_ref": "...", "entity": "ab",
+   "structure": {...}, "structure_rank": 1, "notes": [...]}
+ab ctx: {"parents": {链: {"seq": ..., "numberings": {方案: [[pos, ins, idx], ...]}}}}
+
+ag evidence:
+  {"chains": [{"key","seq","is_protein","order","entity","boundaries":[[s,e,label,level]],
+               "observed":[...]}], "placeholders": [...], "structure": {...},
+   "structure_rank": 1, "notes": [...]}
+"""
+from __future__ import annotations
+
+import json
+
+from etl.core import ids
+from etl.core.antigen_bound import Boundary, Chain, SeqCandidate, bound
+from etl.core.mutate import Edit, ParentChain, apply_point, apply_region
+from etl.core.seqnorm import normalize
+from etl.core.vdomain import Hints, pair_slots
+
+DEFAULT_PLACEHOLDERS = ("NA", "N/A", "None", "nan", "NULL", "\\")
+
+
+def clean(raw, placeholders):
+    """源字符串 → (seq, lineage_frags, flags)。值为空算 placeholder。"""
+    if raw is None or not str(raw).strip():
+        return None, (), ("placeholder",)
+    norm = normalize(str(raw), placeholders)
+    return norm.seq, norm.lineage, norm.flags
+
+
+def _hints(spec):
+    if not spec:
+        return None
+    spans = spec.get("spans")
+    return Hints(linker=spec.get("linker"),
+                 spans=tuple(tuple(s) for s in spans) if spans else None,
+                 single_chain=bool(spec.get("single_chain")))
+
+
+def _parents(ctx):
+    """ctx 可内联 parent，也可只给 `ref` + 链名，由 structure_parents 的缓存恢复。
+
+    内联复制编号表在大 SRC（R50 的 94 万行）上会让每行各存一份，内存爆掉；
+    只存引用时同一结构的 parent 在全进程共享一份。
+    """
+    inline = ctx.get("parents")
+    if inline:
+        out = {}
+        for chain, spec in inline.items():
+            schemes = {name: {(int(row[0]), str(row[1])): int(row[2]) for row in rows}
+                       for name, rows in (spec.get("numberings") or {}).items()}
+            out[chain] = ParentChain(spec["seq"], schemes)
+        return out
+    ref = ctx.get("ref")
+    chains = ctx.get("chains") or []
+    if not ref or not chains:
+        return {}
+    from etl.b import structure_parents as sp
+    out = {}
+    for chain in chains:
+        spec = sp.parent_chain(ref, chain)
+        schemes = {name: {(int(row[0]), str(row[1])): int(row[2]) for row in rows}
+                   for name, rows in spec["numberings"].items()}
+        out[chain] = ParentChain(spec["seq"], schemes)
+    return out
+
+
+def ab_entity(row: dict) -> dict:
+    ev = json.loads(row["evidence"])
+    ctx = row.get("_ctx") or {}
+    ph = tuple(ev.get("placeholders") or DEFAULT_PLACEHOLDERS)
+    seqs = dict(ev.get("seqs") or {})
+    lineage = []
+
+    if ev.get("region"):
+        # CDR-only 来源：从 parent 可变域补全一条链（mutate.apply_region）
+        spec = ev["region"]
+        res = apply_region(seqs.get("h") or "", seqs.get("l"),
+                           (int(spec["span"][0]), int(spec["span"][1])),
+                           spec["replacement"], spec.get("chain", "H"))
+        lineage += list(res.lineage)
+        if res.reason:
+            return {"reason_code": res.reason, "lineage": lineage}
+        return {"AB_ID": ids.ab_id(res.vh, res.vl), "vh": res.vh, "vl": res.vl,
+                "structure": ev.get("structure"),
+                "structure_rank": ev.get("structure_rank"),
+                "lineage": lineage, "applied_edits": [spec.get("edit_id", "region")]}
+
+    h_seq, h_lin, _ = clean(seqs.get("h"), ph)
+    l_seq, l_lin, _ = clean(seqs.get("l"), ph)
+    lineage += list(h_lin) + list(l_lin)
+
+    edits_done = []
+    if ev.get("edits"):
+        # 插入码在结构记录里是大写（PPDB 约定），源表常写小写
+        edits = [Edit(e["id"], e["chain"], e["orig"], int(e["pos"]), e["new"],
+                      e["numbering"], (e.get("ins") or "").upper())
+                 for e in ev["edits"]]
+        res = apply_point(ev.get("entity", "ab"), _parents(ctx), edits)
+        lineage += list(res.lineage)
+        if res.reason:
+            return {"reason_code": res.reason, "lineage": lineage}
+        h_name = ctx.get("h_chain") or "H"
+        l_name = ctx.get("l_chain") or "L"
+        h_seq, h_lin, _ = clean((res.chains or {}).get(h_name), ph)
+        l_seq, l_lin, _ = clean((res.chains or {}).get(l_name) if l_name else None, ph)
+        lineage += list(h_lin) + list(l_lin)
+        edits_done = [e["id"] for e in ev["edits"]]
+
+    hints = ev.get("hints") or {}
+    c = pair_slots(h_seq, l_seq, _hints(hints.get("h")), _hints(hints.get("l")))
+    lineage += list(c.lineage)
+    if c.reason:
+        return {"reason_code": c.reason, "lineage": lineage}
+    if not c.vh and not c.vl:
+        # 两槽都空（链名在结构里无序列，或全为非蛋白链）：ids.ab_id 会抛，按无序列排除
+        return {"reason_code": "no_sequence", "lineage": lineage}
+    return {"AB_ID": ids.ab_id(c.vh, c.vl), "vh": c.vh, "vl": c.vl,
+            "structure": ev.get("structure"),
+            "structure_rank": ev.get("structure_rank"),
+            "lineage": lineage, "applied_edits": edits_done}
+
+
+def ag_entity(row: dict) -> dict:
+    ev = json.loads(row["evidence"])
+    ctx = row.get("_ctx") or {}
+    ph = tuple(ev.get("placeholders") or DEFAULT_PLACEHOLDERS)
+    lineage, chains = [], []
+    edits_done = []
+
+    if ev.get("edits"):
+        edits = [Edit(e["id"], e["chain"], e["orig"], int(e["pos"]), e["new"],
+                      e["numbering"], (e.get("ins") or "").upper())
+                 for e in ev["edits"]]
+        res = apply_point("ag", _parents(ctx), edits)
+        lineage += list(res.lineage)
+        if res.reason:
+            return {"reason_code": res.reason, "lineage": lineage}
+        ev = dict(ev)
+        ev["chains"] = [dict(c, seq=(res.chains or {}).get(c["key"], c["seq"]))
+                        for c in ev.get("chains") or []]
+        edits_done = [e["id"] for e in ev["edits"]]
+
+    for spec in ev.get("chains") or []:
+        seq, lin, flags = clean(spec.get("seq"), ph)
+        lineage += list(lin)
+        if seq is None:
+            return {"reason_code": flags[0] if flags else "no_sequence", "lineage": lineage}
+        chains.append(Chain(
+            spec["key"], is_protein=spec.get("is_protein", True),
+            order=spec.get("order"), entity=spec.get("entity"),
+            candidates=(SeqCandidate("source_native", seq),),
+            boundaries=tuple(Boundary(b[3], int(b[0]), int(b[1]), b[2])
+                             for b in spec.get("boundaries") or ()),
+            observed_segments=tuple(spec["observed"]) if spec.get("observed") else None))
+    b = bound(chains)
+    lineage += list(b.lineage)
+    if b.reason:
+        return {"reason_code": b.reason, "lineage": lineage}
+    return {"AG_ID": ids.ag_id(list(b.chains)), "sequence": list(b.chains),
+            "structure": ev.get("structure"),
+            "structure_rank": ev.get("structure_rank"),
+            "lineage": lineage, "applied_edits": edits_done}

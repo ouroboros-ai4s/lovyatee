@@ -56,6 +56,15 @@ def test_unknown_linker_is_unresolved_unless_hinted():
     assert to_fv(s, Hints(linker="AAAAAAAAAAAA")).reason is None
 
 
+def test_single_chain_hint_accepts_unrecognised_linker():
+    """来源声明的单链构建体：两域之间没有可识别的 G4S linker 时仍按 scFv 拆分。"""
+    seq = R76_VH + "AAAAGSASTKGP" + R76_VL
+    assert to_fv(seq).reason == "unresolved"
+    c = to_fv(seq, Hints(single_chain=True))
+    assert c.reason is None and c.vh and c.vl
+    assert "step=split" in c.lineage[-1] and "linker=AAAAGSASTKGP" in c.lineage[-1]
+
+
 def test_pair_slots_cases():
     assert pair_slots(R76_H, R76_L).reason is None
     assert pair_slots(R76_L, R76_H).lineage[0].startswith("step=slot_swap")

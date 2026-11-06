@@ -1,0 +1,34 @@
+{
+  "src": "SRC_R75",
+  "note": "JSON 是 YAML 1.2 的子集，运行期只 json.loads。抗体侧用 1N8Z 的 VH/VL 作为 parent；CDR-H3 由本行 10 aa 替换。",
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "本来源研究 Trastuzumab 重链 CDR-H3（IMGT 107-116 位，10 个残基）的大规模替换文库，靶点为 HER2。因此每行的 10 aa 序列替换 1N8Z 重链可变域的 IMGT 107-116 区间，其余 VH 与 VL 保持 parent。",
+      "applies_to": {"file": "her2/her2_aff_large"},
+      "evidence": {
+        "snapshot_file": "README.md",
+        "quote": "本来源研究 Trastuzumab 重链 CDR-H3（IMGT 107—116 位，10 个残基）的大规模替换文库，靶点为 HER2。"
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "抗原是 HER2，序列取自参考复合物 1N8Z 的 polymer entity 3（author chain C）。",
+      "applies_to": {},
+      "evidence": {
+        "snapshot_file": "README.md",
+        "quote": "实验体系为酵母表面展示的 scFv：scFv 展示在酵母细胞表面，用荧光标记的 HER2 抗原染色，再按结合强度分选。"
+      },
+      "structure": {"id": "1N8Z", "chain": "C"}
+    },
+    {
+      "id": "C3",
+      "statement": "主表按结合强度分选，class 是相对强度档而非绝对 Kd；label 只把最高档标 1。",
+      "applies_to": {"file": "her2/her2_aff_large", "col": "class"},
+      "evidence": {
+        "snapshot_file": "README.md",
+        "quote": "再按结合强度分选"
+      }
+    }
+  ]
+}

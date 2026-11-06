@@ -1,0 +1,41 @@
+{
+  "src": "SRC_R09",
+  "note": "JSON 是 YAML 1.2 的子集，运行期只 json.loads。本 SRC 的抗原来源分三类：表内逐行序列（AbRank 的 ag_seq、kothiwal 的 antigen_seq）、可核验的固定靶肽（li2023 同 R23）、其余无可核验来源。",
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "AbRank_dataset.csv 的 ag_seq 列是逐行抗原序列，直接使用。",
+      "applies_to": {
+        "file": "AbRank_dataset.csv",
+        "col": "ag_seq"
+      },
+      "evidence": {
+        "snapshot_file": "FLAb/data/binding/AbRank_dataset.csv.zip",
+        "quote": "AbRank_dataset.csv"
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "li2023 的 AlphaSeq 表与 SRC_R23 是同批测量（MIT_Target），正靶抗原是同一个 14 aa 肽 PDVDLGDISGINAS；AlphaNeg1~3 是负对照、没有来源序列。",
+      "applies_to": {
+        "file": "li2023machine_scFv-SARS-CoV-2_affinity1.csv",
+        "col": "Target"
+      },
+      "value": "PDVDLGDISGINAS",
+      "value_from_file": "/data_new/ywy/dataset-abag/SRC_R23_ALPHASEQ/v1.0.0/README.md",
+      "evidence": {
+        "snapshot_file": "FLAb/data/binding/li2023machine_scFv-SARS-CoV-2_affinity1.csv.zip",
+        "quote": "li2023machine_scFv-SARS-CoV-2_affinity1.csv"
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "其余表（engelhart2022、tsuruta2024 两表、phillips2021、adams2017、cognano、以及 kothiwal 之外的固定靶表）不提供可核验的抗原序列，也不在本次可联网核验的范围内；这些行按 no_antigen_binding 排除。",
+      "applies_to": {},
+      "evidence": {
+        "snapshot_file": "FLAb/data/binding/engelhart2022dataset_scFv-SARS-CoV-2_affinity.csv.zip",
+        "quote": "engelhart2022dataset_scFv-SARS-CoV-2_affinity.csv"
+      }
+    }
+  ]
+}

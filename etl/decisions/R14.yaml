@@ -1,0 +1,42 @@
+{
+  "src": "SRC_R14",
+  "note": "JSON 是 YAML 1.2 的子集，运行期只 json.loads。",
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "每个亲本复合物随包一个 PDB（AB-Bind-Database/<PDB>.pdb，32 个），抗体与抗原两侧的序列都由该结构按链恢复；逐行只有突变，不含序列。",
+      "applies_to": {"file": "AB-Bind-Database/AB-Bind_experimental_data.csv"},
+      "evidence": {
+        "file": "AB-Bind-Database/AB-Bind_experimental_data.csv",
+        "quote": "#PDB,Partners(A_B),Protein-1,Protein-2,Mutation,ddG(kcal/mol)"
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "Mutation 列的写法是 `链:原残基位置新残基`，位置是结构作者编号（PDB author numbering），插入码跟在位置后。",
+      "applies_to": {"file": "AB-Bind-Database/AB-Bind_experimental_data.csv", "col": "Mutation"},
+      "evidence": {
+        "file": "AB-Bind-Database/AB-Bind_experimental_data.csv",
+        "quote": "D:L483T,D:V486P,D:H487A,D:A488M,D:I491L,D:A492P,D:M496I"
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "1T83 与 3WJJ 是 Fc 段与 Fc 受体的结合，不是抗体–抗原 pair，按 Fc-only 排除。",
+      "applies_to": {"file": "AB-Bind-Database/AB-Bind_experimental_data.csv", "value": "1T83"},
+      "evidence": {
+        "file": "AB-Bind-Database/AB-Bind_experimental_data.csv",
+        "quote": "1T83,AB_C,hu-FCgIIIb,Fc-IGG1"
+      }
+    },
+    {
+      "id": "C4",
+      "statement": "1DVF 两侧都是 Fv（D1.3 Fv 对 E5.2 Fv），没有独立抗原，因此该 39 行按 no_antigen_binding 排除。",
+      "applies_to": {"file": "AB-Bind-Database/AB-Bind_experimental_data.csv", "value": "1DVF"},
+      "evidence": {
+        "file": "AB-Bind-Database/AB-Bind_experimental_data.csv",
+        "quote": "1DVF,AB_CD,IgG1-kappa D1.3 Fv,E5.2 Fv"
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "src": "SRC_R74",
+  "note": "JSON 是 YAML 1.2 的子集，运行期只 json.loads。",
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "本 SRC 的唯一抗原是 PD-1，序列取自参考复合物 5GGS 的 polymer entity 3；两条链 Y 与 Z 序列相同，取 chain Y。",
+      "applies_to": {},
+      "evidence": {
+        "snapshot_file": "README.md",
+        "quote": "参考复合物为 [5GGS](https://www.rcsb.org/structure/5GGS)"
+      },
+      "value": "DSPDRPWNPPTFSPALLVVTEGDNATFTCSFSNTSESFVLNWYRMSPSNQTDKLAAFPEDRSQPGQDSRFRVTQLPNGRDFHMSVVRARRNDSGTYLCGAISLAPKAQIKESLRAELRVTERR",
+      "structure": {
+        "id": "5GGS",
+        "chain": "Y"
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "heavy_sequence 是含 CH1 与铰链、末尾带 HHHHHH 的重链片段，长度为 232 aa，与 5GGS 的 polymer entity 1 逐字相同；突变名只进 lineage，序列已是 A 类。",
+      "applies_to": {
+        "file": "pd_1/affinity.csv",
+        "col": "heavy_sequence"
+      },
+      "evidence": {
+        "snapshot_file": "README.md",
+        "quote": "`heavy_sequence` 是含 CH1 与铰链区、末尾带 `HHHHHH` 的重链片段，长度 232 aa，与 5GGS 的 polymer entity 1 序列逐字相同。"
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "name 的构造是 5GGS__<重链ID>_<轻链ID>_<抗原链ID>__<WT残基>_<位点>_<新残基>；WT 记录名为 5GGS_WT；另有 2 条 assay 对照无抗体序列。",
+      "applies_to": {
+        "file": "pd_1/affinity.csv",
+        "col": "name"
+      },
+      "evidence": {
+        "snapshot_file": "README.md",
+        "quote": "575 条记录的 `name` 统一采用 `5GGS__<重链ID>_<轻链ID>_<抗原链ID>__<WT残基>_<位点>_<新残基>` 的构造，例如 `5GGS__A_B_Z__A_T_28_M`。"
+      }
+    }
+  ]
+}

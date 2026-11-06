@@ -21,6 +21,7 @@ ALLOW = ["H", "K", "L"]     # TCR 链型不在其中，视为无域
 class Hints:
     linker: str | None = None
     spans: tuple[tuple[int, int], ...] | None = None   # 0 起，右开，坐标同输入序列
+    single_chain: bool = False    # 来源已声明这是单链构建体：两域之间的残余即 linker
 
 
 @dataclass(frozen=True)
@@ -168,6 +169,9 @@ def derive(p: Parse, hints: Hints | None = None) -> Construct:
     if len(doms) == 2 and types in (["H", "K"], ["H", "L"], ["K", "H"], ["L", "H"]):
         a, b = doms
         split = _find_linker(seq[a.end:b.start], hints.linker if hints else None)
+        if split is None and hints is not None and hints.single_chain:
+            # 来源声明单链：两域之间整段残余就是 linker，不再要求可识别的连接序列
+            split = (0, b.start - a.end, seq[a.end:b.start])
         if split is None:
             return Construct(None, None, "unresolved", trim)
         at, stop, linker = split

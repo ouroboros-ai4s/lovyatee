@@ -163,3 +163,38 @@ def test_manifest_fields(tmp_path):
     assert m["decision_files"] == {"R23.yaml": hashlib.sha256(df.read_bytes()).hexdigest()}
     assert m["row_counts"] == {"pairs": 2, "3a": 1, "obs": 3, "rejected": 0, "merged": 1}
     assert set(m["qa"]) == {"seed", "per_stratum", "counts"} and str(tmp_path) not in text
+
+
+def test_structure_pick_is_deterministic_across_runs(tmp_path):
+    """同一 3A 下多条记录引用同一结构但链映射不同时，两轮 merge 必须选同一条。"""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    from etl.core.merge import PAIR_SCHEMA, merge
+
+    from etl.core import ids
+    ab = ids.ab_id("EVQLV", None)
+    ag = ids.ag_id(["MKTAY"])
+    three = ids.three_a_id(ab, ag)
+    struct = lambda cm: {"structure_id": "4YHP", "file_ref": None, "chain_map": cm}
+    rows = []
+    for i, cm in enumerate(['{"Q": "Q"}', '{"P": "P"}']):
+        rows.append({
+            "src": "SRC_RXX", "record_key": "row=%d" % i,
+            "AB_ID": ab, "AG_ID": ag, "3A_ID": three,
+            "vh": "EVQLV", "vl": None,
+            "ab_structure": struct(cm), "ab_structure_rank": 10,
+            "ab_lineage": ["step=trim | span=0-5"], "ag_sequence": ["MKTAY"],
+            "ag_structure": struct(cm), "ag_structure_rank": 10,
+            "ag_lineage": ["step=trim | span=0-5"],
+            "obs": [{"label": "1", "assay": None, "condition": None, "replicate": None,
+                     "lineage": ["SRC_RXX | a.csv | row=%d | col=x" % i]}],
+        })
+    src = tmp_path / "pair.parquet"
+    pq.write_table(pa.Table.from_pylist(rows, schema=PAIR_SCHEMA), src)
+
+    picks = []
+    for n in range(2):
+        out = tmp_path / ("m%d" % n)
+        merge(str(src), out, shards=1, qa_per_stratum=1)
+        picks.append((out / "3a" / "part-000.parquet").read_bytes())
+    assert picks[0] == picks[1]
