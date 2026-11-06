@@ -107,3 +107,46 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 `n_pairs=9,480, n_3a=8,501, n_obs=9,480`，`Σ len(affinity)=9,480`，断言全过。
 `overlap`：R08 5,571、R03 1,140、R80 749、R74 566、R76+R77 397、R76+R77+R80 76、R03+R76+R77+R80 2 —— 跨源同一 `3A` 的 SRC 集合并集正常。
 `coverage`：R80 `vh_null=9`、`vl_null=154`（VL-only 与 VHH 行），其余 SRC 无空槽。
+
+### R13 ANDD — 完成
+
+- 数据：`ANDD_v2.xlsx` 单表 48,800 行、49 列。截面积：抗原、抗体、label 三者齐备 8,416；缺抗原 36,183；缺 label 4,201；全缺 0。
+- 与 inventory 一致：`Predicted_or_Not` 四态 `real` 7,294 / `predicted` 2,271 / `\` 39,235；Kd-only 6,294、dG-only 93、both 907。
+- 多链分隔符：`Ag_Seq` 有 1,443 行用 `/` 分隔多链，按顺序全部入库。inventory 的"多链分隔符"提示即此处。
+- 各阶段：adapt 8,416 records / 40,384 rejects（36,183 `no_antigen_sequence` + 4,201 `no_observation`）→ ab 4,855 键（4,849 ok，6 `unresolved`）→ ag 3,105 键 → assemble 8,410 pair。
+- observation：Kd 有值产出 Kd；Kd 空时产出 ΔG；`Predicted_or_Not` 写进 lineage。
+- 单源 merge：`n_pairs=8,410, n_3a=6,067, sum len(affinity)=8,410`，断言全过。
+- 过半码复查：`no_antigen_sequence` 74.2%。inventory 明记 48,800 行中只有 12,617 行有 `Ag_Seq`、36,183 行缺失，与实测 36,183 完全一致。没有抗原序列就不是 pair，条件成立，接受。
+- `no_domain` / `unresolved` 合计 6 条（0.01%），无需第二个工具。
+
+### R11 AbBiBench — 完成
+
+- 数据：17 张 `binding_affinity` 表合计 215,699 行，与 inventory 完全一致。
+- 决策文件 `etl/decisions/R11.yaml`：2 条 claim，`verify_decisions` 通过。抗原由 `metadata.json` 的 `pdb_path` + `antigen_chains` 从随包 PDB 重建。
+- 两处源数据出入（已处理，不影响口径）：metadata 的路径带 `data/` 前缀、`1mhp` 与 `1mlc_LC` 两张表实际不存在（inventory 已记录 1mhp 的同类问题）；`AAYL50_bca.pdb` 文件名大写而 metadata 小写；`3gbn` 的链 A 是非蛋白实体，全长序列为空，剔除后抗原仍是链 B。
+- 各阶段：adapt 215,699 records / 2 个表级 reject（文件缺失）→ ab 148,792 键全 ok（与 inventory 的 Unique 一致）→ ag 12 键（12 个 reference complex）→ assemble 215,699 pair、0 reject。
+- 单源 merge：`n_pairs=215,699, n_3a=148,792, sum len(affinity)=215,699`，断言全过。`pair - 3A = 66,907` 是同抗体对不同抗原表的重复三元组。
+- 抗原唯一序列 11 条（inventory 记 9 条，差异来自 3gbn 链 A 剔除前后的口径与 inventory 的统计方式不同；不影响 pair 产出）。
+
+### R16 GUEST — 完成
+
+- 数据：`antibody_antigen_affinities.txt` 42 行、`antibody_antigen_cases.txt` 68 行、194 个随包 PDB。与 inventory 一致。
+- 抗体与抗原都由随包 PDB 重建；`Antibody PDB` 后缀里的 `H` / `L` 字母直接给链型（`3G6A_LH` 是 L 在前）；`Antigen PDB` 的 `(n)` 后缀是 case 内编号，剥掉。
+- 各阶段：adapt 42 records / 0 rejects → ab 42 键全 ok → ag 39 键（38 ok，1 `placeholder`）→ assemble 41 pair。
+- 唯一排除：一个抗原链的全长序列为空（非蛋白实体），按 `placeholder` 排除。
+- 只产出 `Kd (nM)`，`ΔG (kcal/mol)` 不产出，符合 plan 的额外核对。
+- 单源 merge：`n_pairs=41, n_3a=41`，断言全过。
+
+### R20 SAbDab / SAbDab2 — 完成（资源适配器，不产 3A）
+
+- `sabdab2_summary.csv` 22,264 行、11,604 个 PDB；`sabdab_search_structures_*.tar` 内 11,604 条 `full_structures/pdb_<8位>_sabdab.cif.gz`。
+- 对外接口：`r20.index()`、`r20.structure_path(pdb)`（解到 `/data_new/ywy/cache/rcsb/` 并 gzip 展开）、`r20.open_structure(pdb)`（本地优先，未收录退回 RCSB）。
+- 成员名是补零到八位的小写 PDB ID，不是数值编码。
+- 抽查 3 个结构 ID：`10BT`（16 链）、`1AHW`（6 链）、`3HFM`（3 链），全部解析成功。
+- 本 SRC 不产出 pair / 3A。
+
+### 共享模块改动汇总
+
+1. `vdomain.Hints` 新增 `single_chain`（R80 引入），附 `test_vdomain.py` 覆盖。
+2. `check.py` 的 adapt 对账区分行级与表级 reject；`run_src.py` 传递 adapter 声明的 `SOURCE_ROWS`。
+3. 依赖：新增 `openpyxl==3.1.5`（R13 / R16 的 xlsx）。

@@ -25,10 +25,13 @@ def check(src: str, out_root: Path = Path("/data_new/ywy/etl_out")) -> dict:
     result["reconcile"] = rec
 
     rej = pq.read_table(d / "reject_log.parquet").to_pylist()
-    # 同一源行只应记一次 adapt reject；按 (src 内文件, key) 去重，防 adapter 重复登记
-    adapt_keys = {(r["key"].rsplit(":", 1)[-1] if ":" in r["key"] else r["key"])
-                  for r in rej if r["stage"] == "adapt"}
-    adapt_rej = len(adapt_keys)
+    # 同一源行只应记一次 adapt reject；key 已含文件前缀，按完整 key 去重
+    # 行级 adapt reject 的 key 含 `row=`；表级（整表无标签、文件缺失）不占源行配额
+    row_rej = {r["key"] for r in rej if r["stage"] == "adapt" and "row=" in r["key"]}
+    table_rej = {r["key"] for r in rej if r["stage"] == "adapt" and "row=" not in r["key"]}
+    adapt_rej = len(row_rej)
+    if table_rej:
+        rec["adapt_table_rejects"] = sorted(table_rej)
     covered = rec["records"] + adapt_rej
     src_rows = rec.get("source_rows")
     result["check1_adapt"] = {
