@@ -20,7 +20,7 @@ SRC_DIR = {
     "SRC_R15": "SRC_R15_SKEMPI2", "SRC_R16": "SRC_R16_GUEST",
     "SRC_R20": "SRC_R20_SABDAB", "SRC_R23": "SRC_R23_ALPHASEQ",
     "SRC_R50": "SRC_R50_GRAPHINITY", "SRC_R74": "SRC_R74_ABDESIGN2",
-    "SRC_R75": "SRC_R75_ABDESIGN2", "SRC_R78": "SRC_R78_MOCHIBIND",
+    "SRC_R75": "SRC_R75_BUZZ", "SRC_R78": "SRC_R78_MOCHIBIND",
     "SRC_R79": "SRC_R79_ALPHABIND", "SRC_R80": "SRC_R80_ANTIPASTI",
 }
 SEQ = re.compile("[ACDEFGHIKLMNPQRSTVWY]{8,}")
@@ -83,8 +83,27 @@ def verify(path: Path) -> list[str]:
             spec = claim.get("structure")
             if spec and seq in _structure_text(spec):
                 continue
+            # 跨源取值：声明了来源文件时在该文件里核对（例如 R79 的抗原取自 R78）
+            src_ref = claim.get("value_from_file")
+            if src_ref:
+                src_path = _resolve_any(src_ref)
+                if src_path and seq in _read(src_path):
+                    continue
             problems.append(cid + ": value sequence not in " + where)
     return problems
+
+
+def _resolve_any(ref: str) -> Path | None:
+    """在 SRC 目录之外查找：`snapshot` 形式的相对路径以 /data_new/ywy/dataset-abag 为根。"""
+    p = Path(ref)
+    if p.is_absolute() and p.exists():
+        return p
+    for base in (DATA, DATA / "SRC_R78_MOCHIBIND"):
+        q = base / ref
+        if q.exists():
+            return q
+    hits = list(DATA.glob("*/**/" + p.name))
+    return hits[0] if hits else None
 
 
 def _value_seqs(claim) -> list[str]:

@@ -20,7 +20,7 @@ import json
 
 from etl.core import ids
 from etl.core.antigen_bound import Boundary, Chain, SeqCandidate, bound
-from etl.core.mutate import Edit, ParentChain, apply_point
+from etl.core.mutate import Edit, ParentChain, apply_point, apply_region
 from etl.core.seqnorm import normalize
 from etl.core.vdomain import Hints, pair_slots
 
@@ -45,10 +45,29 @@ def _hints(spec):
 
 
 def _parents(ctx):
+    """ctx 可内联 parent，也可只给 `ref` + 链名，由 structure_parents 的缓存恢复。
+
+    内联复制编号表在大 SRC（R50 的 94 万行）上会让每行各存一份，内存爆掉；
+    只存引用时同一结构的 parent 在全进程共享一份。
+    """
+    inline = ctx.get("parents")
+    if inline:
+        out = {}
+        for chain, spec in inline.items():
+            schemes = {name: {(int(row[0]), str(row[1])): int(row[2]) for row in rows}
+                       for name, rows in (spec.get("numberings") or {}).items()}
+            out[chain] = ParentChain(spec["seq"], schemes)
+        return out
+    ref = ctx.get("ref")
+    chains = ctx.get("chains") or []
+    if not ref or not chains:
+        return {}
+    from etl.b import structure_parents as sp
     out = {}
-    for chain, spec in (ctx.get("parents") or {}).items():
+    for chain in chains:
+        spec = sp.parent_chain(ref, chain)
         schemes = {name: {(int(row[0]), str(row[1])): int(row[2]) for row in rows}
-                   for name, rows in (spec.get("numberings") or {}).items()}
+                   for name, rows in spec["numberings"].items()}
         out[chain] = ParentChain(spec["seq"], schemes)
     return out
 
@@ -59,6 +78,20 @@ def ab_entity(row: dict) -> dict:
     ph = tuple(ev.get("placeholders") or DEFAULT_PLACEHOLDERS)
     seqs = dict(ev.get("seqs") or {})
     lineage = []
+
+    if ev.get("region"):
+        # CDR-only 来源：从 parent 可变域补全一条链（mutate.apply_region）
+        spec = ev["region"]
+        res = apply_region(seqs.get("h") or "", seqs.get("l"),
+                           (int(spec["span"][0]), int(spec["span"][1])),
+                           spec["replacement"], spec.get("chain", "H"))
+        lineage += list(res.lineage)
+        if res.reason:
+            return {"reason_code": res.reason, "lineage": lineage}
+        return {"AB_ID": ids.ab_id(res.vh, res.vl), "vh": res.vh, "vl": res.vl,
+                "structure": ev.get("structure"),
+                "structure_rank": ev.get("structure_rank"),
+                "lineage": lineage, "applied_edits": [spec.get("edit_id", "region")]}
 
     h_seq, h_lin, _ = clean(seqs.get("h"), ph)
     l_seq, l_lin, _ = clean(seqs.get("l"), ph)
@@ -86,6 +119,9 @@ def ab_entity(row: dict) -> dict:
     lineage += list(c.lineage)
     if c.reason:
         return {"reason_code": c.reason, "lineage": lineage}
+    if not c.vh and not c.vl:
+        # 两槽都空（链名在结构里无序列，或全为非蛋白链）：ids.ab_id 会抛，按无序列排除
+        return {"reason_code": "no_sequence", "lineage": lineage}
     return {"AB_ID": ids.ab_id(c.vh, c.vl), "vh": c.vh, "vl": c.vl,
             "structure": ev.get("structure"),
             "structure_rank": ev.get("structure_rank"),

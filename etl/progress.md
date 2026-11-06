@@ -179,3 +179,70 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 4. `pipeline.Record` 新增 `row_key`，`reconcile.json` 新增 `covered_rows`：一行产多条 record 的 SRC（R15 的 mut/wt）按源行对账，不再重复计数。
 5. `pipeline.core_commit()` 改为对 `etl/core/*.py` 加 `etl/b/*.py` 取内容 hash。原先只看 `etl/core`，改 resolver 不会让缓存失效，R14 曾因此跑出旧结果。
 6. `entities.ab_entity` / `ag_entity` 的主题编号按 `ab_ctx` 的 `h_chain` / `l_chain` 取，不再假定链名就是 `H` / `L`（SKEMPI 与 AB-Bind 的链名多样）。
+
+### R50 Graphinity — 完成
+
+- 数据：`Synthetic_FoldX_ddG_942723.csv` 942,723 行 + `Synthetic_FlexddG_ddG_20829.csv` 20,829 行 = 963,552 行，与 inventory 一致。
+- `complex` 编码：FoldX 是 `<pdb>_<原残基><链><位置><新残基>`；Flex 是 `<pdb>_<抗体链组>_<抗原链组>_<原残基><链><位置><新残基>`。
+- 两层键：parent 按 `(结构引用, 链)` 缓存（`structure_parents`），`vdomain` 每个 parent 只做一次；94 万行不再逐行恢复编号表。
+- **判定一处，已记录：** 突变不重建序列，只进 lineage（A 类处理）。原因：FoldX 的 `orig` 取自 Graphinity 自己的参考序列，与 PDB entity 残基常不一致，用 `apply_point` 重建时 90% 以上行会被 `orig_mismatch` 挡掉；而计算 ddG 本身不需要突变后序列。
+- 各阶段：adapt 925,711 records / 37,841 rejects（`unresolved`，结构链不在 Graphinity 包内）→ ab 2,658 键（1,396 ok）→ ag 2,626 键 → assemble 918,698 pair、7,013 reject。
+- 单源 merge：`n_pairs=918,698, observations=938,487`，断言全过。ab/ag 键数是结构级 entity（1,409 个 parent），不是行数。
+- 百分点：`records + adapt_rejects = 963,552`，与源行数一致。
+- 产出列：FoldX `foldx_ddg`；Flex `flexddg_ddg` 与 `flexddg_ddg-talaris2014` 各一条 observation。`flexddg_ddg-talaris2014-gam` 与 `flexddg_ddg` 逐行相等，不产出。
+- 需要 `SHARDED = True`（10 万行一片），否则整表驻留内存会到 GB 级。
+
+### R75 HER2-aff-large / Buzz — 完成
+
+- 数据：`data.zip` 解出的 5 个子集，主表 `her2_aff_large` 524,346 行（`0.7_0.15_0.15` 三份 split 之和），与 inventory 一致；mason 34,049、shanehsazzadeh 198、neg 574、流感 199,892。
+- 决策文件 `etl/decisions/R75.yaml`：3 条 claim，通过自查。抗体由 `mutate.apply_region` 从 1N8Z 重链 B 的 IMGT 107-116 替换本行 CDR-H3，保留 parent VL（1N8Z 链 A）；抗原 HER2 取 1N8Z entity 3 链 C。
+- 各阶段：adapt 759,059 records / 0 rejects → ab 626,620 键全 ok → ag 6 键（1 ok）→ assemble 559,167 pair。
+- observation 1,083,513 条：主表每行 `class` 与 `label` 两条。
+- 单源 merge：`n_pairs=559,167, n_3a=558,413, sum len(affinity)=1,083,513`，断言全过。
+- 排除：流感集 199,892 行（26.3%）按 `placeholder` 排除 —— 这 2 个体系的抗原序列不在本 SRC 包内，也不在 R09 的 phillips 表里（该表只有重/轻链）。未过半，接受。
+
+### R13 补充：`Predicted_or_Not` 与四态
+
+已在 R13 小节记录，此处不重复。
+
+### R11 / R16 补充
+
+见前文。
+
+### R78 MochiBind — 完成
+
+- 数据：7 张采样表合计 33,454 行，与 inventory 一致。
+- 观察值：`alphaseq_affinity` 33,454 条 + `predicted_affinity` 19,224 条 = 52,678；`parental_*`、`avg_off_target_affinity` 不产出。
+- 单源 merge：`n_pairs=33,454, n_3a=33,337`，断言全过。
+
+### R10 AbRank — 完成
+
+- 数据：`AbRank_dataset.csv`（制表符）342,356 行、28 列，与 inventory 一致。
+- **一处数据事实，已记录：** `Source=RBD-escape` 的 192,559 行里，`Ag_seq` 实际是突变标记串（如 `SARS-CoV2_(A410E)`），不是氨基酸序列；这些行没有抗原序列，按 `no_antigen_sequence` 排除。其余行的 `Ag_seq` 是真正的序列。
+- 三个读数列 `Affinity_Kd [nM]` / `IC50 [ug/mL]` / `escape` 各成一条 observation；值原样保留（含 `>`/`<`）。`log_Aff`、`log(Kd_ratio)`、`Aff_op` 不产出。
+- 单源 merge：`n_pairs=148,736, n_3a=147,202, sum len(affinity)=149,026`，断言全过。
+
+### R23 MIT-LL AlphaSeq — 完成
+
+- 数据：`MITLL_AAlphaBio_Ab_Binding_dataset.csv` 1,259,700 行、14 列，与 inventory 一致。
+- 决策文件 `etl/decisions/R23.yaml`：3 条 claim，通过自查。正靶抗原是 14 aa 肽 PDVDLGDISGINAS。
+- 各阶段：adapt 154,632 records / 1,105,068 rejects → ab 71,830 键全 ok → ag 1 键 → assemble 154,632 pair。
+- 排除构成：`no_antigen_binding` 944,775（AlphaNeg1~3 是负对照、没有来源序列，决策文件 C2 要求排除）；`no_observation` 160,293（`Pred_affinity` 空）。
+- 单源 merge：`n_pairs=154,632, n_3a=71,830, sum len(affinity)=154,632`，断言全过。
+
+### R79 AlphaBind — 完成
+
+- 数据：8 张 AlphaSeq 表合计 209,924 行，与 inventory 一致。
+- 决策文件 `etl/decisions/R79.yaml`：4 条 claim，通过自查（含跨源取值核对）。3 个 campaign 的抗原序列取自 R78 的原始文件；`HER2-OPT` 与 R78 的 HER2 片段不是同一构建体，按 C4 排除。
+- 各阶段：adapt 193,764 records / 16,160 rejects → ab 188,957 键全 ok → ag 3 键 → assemble 193,764 pair。
+- observation 302,230 条：`alphaseq_affinity` 与 `predicted_affinity` 各成一条。
+- 单源 merge：`n_pairs=193,764, n_3a=188,957`，断言全过。
+
+### 驱动层改动（第二批）
+
+7. `pipeline.run_sharded`：大 SRC 按 10 万行分片，每片独立跑完再合并 parquet。适用于 R50（96 万）、R12（118 万）、R23（126 万）、R10（34 万）、R09（463 万）。
+8. `adapters` 可返回生成器 + `adapt.rejects` 容器；`run_sharded` 在 record 流消费完后读取 rejects。
+9. `structure_parents.py`：结构型 SRC 共享的 parent 恢复与缓存，`(结构, 链)` 只解析一次。
+10. `entities._parents` 支持 `ctx` 只给结构引用（`ref` + `chains`），不在每个 record 里复制编号表。
+11. `entities.ab_entity` / `ag_entity` 增加两槽皆空时的 `no_sequence` 兜底（原先会抛 `ValueError: vh and vl both empty`）。
+12. `verify_decisions` 支持 `value_from_file`，用于跨 SRC 取值（R79 的抗原取自 R78）。

@@ -1,0 +1,60 @@
+{
+  "src": "SRC_R79",
+  "note": "JSON 是 YAML 1.2 的子集，运行期只 json.loads。抗原序列取自 SRC_R78 的原始文件（R78 是 R79 各 campaign 的 5k 采样，其 antigen 列带直接序列）；对应关系逐 campaign 给定。",
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "aab-pp489 活动的靶是 TIGIT_22-137，抗原序列取 R78 的 df_pp489_* 表 antigen 列。",
+      "applies_to": {
+        "campaign": "aab-pp489",
+        "matalpha_description": "TIGIT_22-137_POI-AGA2"
+      },
+      "evidence": {
+        "snapshot_file": "alphabind/manuscript/data/alphaseq/fine-tuning/aab-pp489_fine-tuning_alphaseq.csv",
+        "quote": "TIGIT_22-137_POI-AGA2"
+      },
+      "value": "MMTGTIETTGNISAEKGGSIILQCHLSSTTAQVTQVNWEQQDQLLAICNADLGWHISPSFKDRVAPGPGLGLTLQSLTVNDTGEYFCIYHTYPDGTYTGRIFLEVLESSVAEHGAR",
+      "value_from_file": "snapshot-2026-05-19/ab-binding-eval/data/df_pp489_sampled_5k_clean.csv"
+    },
+    {
+      "id": "C2",
+      "statement": "pembrolizumab-scfv 活动的靶是 huPD-1，抗原序列取 R78 的 df_pem_* 表 antigen 列。",
+      "applies_to": {
+        "campaign": "pembrolizumab-scfv",
+        "matalpha_description": "huPD-1_RE(rebuilt)"
+      },
+      "evidence": {
+        "snapshot_file": "alphabind/manuscript/data/alphaseq/fine-tuning/pembrolizumab-scfv_fine-tuning_alphaseq.csv",
+        "quote": "huPD-1_RE(rebuilt)"
+      },
+      "value": "MLDSPDRPWNPPTFSPALLVVTEGDNATFTCSFSNTSESFVLNWYRMSPSNQTDKLAAFPEDRSQPGQDSRFRVTQLPNGRDFHMSVVRARRNDSGTYLCGAISLAPKAQIKESLRAELRVTE",
+      "value_from_file": "snapshot-2026-05-19/ab-binding-eval/data/df_pem_sampled_5k_clean.csv"
+    },
+    {
+      "id": "C3",
+      "statement": "vhh72 活动的靶是 SARS-CoV-2 RBD，抗原序列取 R78 的 df_vhh72_* 表 antigen 列。",
+      "applies_to": {
+        "campaign": "vhh72",
+        "matalpha_description": "SARS-CoV2_RBD_(6LZG)"
+      },
+      "evidence": {
+        "snapshot_file": "alphabind/manuscript/data/alphaseq/fine-tuning/vhh72_fine-tuning_alphaseq.csv",
+        "quote": "SARS-CoV2_RBD_(6LZG)"
+      },
+      "value": "RVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGP",
+      "value_from_file": "snapshot-2026-05-19/ab-binding-eval/data/df_vhh72_sampled_5k_clean.csv"
+    },
+    {
+      "id": "C4",
+      "statement": "trastuzumab 活动的靶标为 HER2-OPT_AGA2-POI，与 R78 的 df_tra_* 表 120 aa 的 HER2 ECD 片段不是同一构建体，无法取得可核验的抗原序列；该活动的行按 no_antigen_binding 排除。",
+      "applies_to": {
+        "campaign": "trastuzumab-scfv",
+        "matalpha_description": "HER2-OPT_AGA2-POI"
+      },
+      "evidence": {
+        "snapshot_file": "alphabind/manuscript/data/alphaseq/validation/trastuzumab-scfv-full_validation_alphaseq.csv",
+        "quote": "HER2-OPT_AGA2-POI"
+      }
+    }
+  ]
+}

@@ -292,3 +292,129 @@ def run(src: str, records: Sequence[Record], reject_rows: Sequence[dict],
     }
     (out / "reconcile.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     return summary
+
+
+def run_sharded(src: str, records, reject_rows, resolve_ab, resolve_ag,
+                out_root: Path | str = DEFAULT_OUT, workers: int = 32,
+                decisions: Sequence[Path] = (), source_rows: int | None = None,
+                shard_size: int = 100_000) -> dict:
+    """大 SRC 用：把 record 流切成若干片，每片走一遍 `run()`，最后合并 parquet。
+
+    `records` 可以是生成器；`reject_rows` 可以是列表或 `adapter.rejects` 这类在
+    流式产出过程中填满的容器——本函数在全部 record 消费完之后才读它。
+    """
+    out = Path(out_root) / src
+    out.mkdir(parents=True, exist_ok=True)
+    shard_dirs = []
+    batch, n_total = [], 0
+    row_keys = set()        # 只累计源行键，不驻留 record 本身
+    for rec in records:
+        row_keys.add(rec.row_key or rec.key)
+        batch.append(rec)
+        if len(batch) >= shard_size:
+            shard_dirs.append(_run_shard(src, out, len(shard_dirs), batch,
+                                         resolve_ab, resolve_ag, workers, decisions))
+            n_total += len(batch)
+            batch = []
+    if batch:
+        shard_dirs.append(_run_shard(src, out, len(shard_dirs), batch,
+                                     resolve_ab, resolve_ag, workers, decisions))
+        n_total += len(batch)
+
+    rejects = list(reject_rows)
+    for name in ("raw_ab", "raw_ag", "raw_obs", "ab_entity", "ag_entity", "pair"):
+        _concat(shard_dirs, name, out / (name + ".parquet"))
+    # reject_log 分两段：adapt 阶段（本层收集）+ assemble 阶段（各分片）
+    _concat(shard_dirs, "reject_log", out / "_assemble_rejects.parquet")
+    from etl.core.merge import REJECT_SCHEMA
+    asm = (pq.read_table(out / "_assemble_rejects.parquet").to_pylist()
+           if (out / "_assemble_rejects.parquet").stat().st_size else [])
+    _write(out / "reject_log.parquet", rejects + asm, REJECT_SCHEMA)
+    (out / "_assemble_rejects.parquet").unlink()
+    for d in shard_dirs:
+        for f in d.glob("*"):
+            if f.is_file():
+                f.unlink()
+        try:
+            d.rmdir()
+        except OSError:
+            pass
+
+    ab_ent = _read_dict(out / "ab_entity.parquet", "ab_key")
+    ag_ent = _read_dict(out / "ag_entity.parquet", "ag_key")
+    pair_n = pq.ParquetFile(out / "pair.parquet").metadata.num_rows
+    distinct_3a = _count_distinct(out / "pair.parquet", "3A_ID")
+    obs_n = _sum_list_len(out / "pair.parquet", "obs")
+
+    summary = {
+        "src": src, "source_rows": source_rows, "records": n_total,
+        "adapt_rejects": len(rejects),
+        "ab_keys": len(ab_ent),
+        "ab_ok": sum(1 for v in ab_ent.values() if not v["reason_code"]),
+        "ab_rejected": sum(1 for v in ab_ent.values() if v["reason_code"]),
+        "ag_keys": len(ag_ent),
+        "ag_ok": sum(1 for v in ag_ent.values() if not v["reason_code"]),
+        "ag_rejected": sum(1 for v in ag_ent.values() if v["reason_code"]),
+        "pairs": pair_n, "assemble_rejects": len(asm),
+        "observations": obs_n, "distinct_3a": distinct_3a,
+        "reasons": _count(x["reason_code"] for x in rejects + asm),
+        "shards": len(shard_dirs),
+        "covered_rows": len({_row_key(x["key"]) for x in rejects} | row_keys),
+    }
+    (out / "reconcile.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    return summary
+
+
+def _row_key(key: str) -> str:
+    head, _, tail = key.rpartition(":")
+    return head if tail in ("mut", "wt") else key
+
+
+def _run_shard(src, out, index, batch, resolve_ab, resolve_ag, workers, decisions):
+    """分片目录用 `out/_shard-NNN/SRC_xxx/`；跑完把 parquet 提到 `out/_shard-NNN/`。"""
+    root = out / ("_shard-%03d" % index)
+    root.mkdir(parents=True, exist_ok=True)
+    # 分片内不写 adapt reject（它们已由 run_sharded 统一收集）；只保留 assemble 的
+    run(src, batch, [], resolve_ab, resolve_ag, out_root=root, workers=workers,
+        decisions=decisions)
+    produced = root / src
+    for f in produced.glob("*.parquet"):
+        f.replace(root / f.name)
+    for f in list(produced.glob("*")):
+        if f.is_file():
+            f.unlink()
+    try:
+        produced.rmdir()
+    except OSError:
+        pass
+    return root
+
+
+def _concat(shard_dirs, name, target: Path) -> None:
+    files = [d / (name + ".parquet") for d in shard_dirs]
+    files = [f for f in files if f.exists() and f.stat().st_size > 0]
+    if not files:
+        target.write_bytes(b"")
+        return
+    import pyarrow.parquet as _pq
+    tables = [_pq.read_table(f) for f in files]
+    _pq.write_table(pa.concat_tables(tables, promote_options="permissive"), target,
+                    compression="zstd")
+
+
+def _read_dict(path: Path, key: str) -> dict:
+    return {row[key]: row for row in pq.read_table(path).to_pylist()}
+
+
+def _count_distinct(path: Path, col: str) -> int:
+    import duckdb
+    con = duckdb.connect()
+    return con.execute('select count(distinct "%s") from read_parquet(?)' % col,
+                       [str(path)]).fetchone()[0]
+
+
+def _sum_list_len(path: Path, col: str) -> int:
+    import duckdb
+    con = duckdb.connect()
+    return con.execute('select sum(len("%s")) from read_parquet(?)' % col,
+                       [str(path)]).fetchone()[0]

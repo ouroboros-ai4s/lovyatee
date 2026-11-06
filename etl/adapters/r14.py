@@ -156,9 +156,9 @@ def adapt():
                              "structure": {"structure_id": pdb, "file_ref": str(ref),
                                            "chain_map": {c: c for c in ag_chains}},
                              "structure_rank": 10},
-                ab_ctx={"parents": {c: parents[c] for c in ab},
+                ab_ctx={"ref": str(ref), "chains": ab,
                         "h_chain": h_chain, "l_chain": l_chain or ""},
-                ag_ctx={"parents": {c: parents[c] for c in ag_chains}},
+                ag_ctx={"ref": str(ref), "chains": ag_chains}},
                 ab_notes=(join(kv("protein", row["Protein-1"])),),
                 ag_notes=(join(kv("protein", row["Protein-2"])),)))
     return records, rejects
