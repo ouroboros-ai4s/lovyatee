@@ -24,12 +24,19 @@ def check(src: str, out_root: Path = Path("/data_new/ywy/etl_out")) -> dict:
     rec = json.loads((d / "reconcile.json").read_text())
     result["reconcile"] = rec
 
-    raw = pq.read_table(d / "raw_ab.parquet").num_rows
     rej = pq.read_table(d / "reject_log.parquet").to_pylist()
-    adapt_rej = sum(1 for r in rej if r["stage"] == "adapt")
-    result["check1_adapt"] = {"raw_records": raw,
-                              "expected": rec["records"] + adapt_rej,
-                              "ok": raw == rec["records"] + adapt_rej}
+    # 同一源行只应记一次 adapt reject；按 (src 内文件, key) 去重，防 adapter 重复登记
+    adapt_keys = {(r["key"].rsplit(":", 1)[-1] if ":" in r["key"] else r["key"])
+                  for r in rej if r["stage"] == "adapt"}
+    adapt_rej = len(adapt_keys)
+    covered = rec["records"] + adapt_rej
+    src_rows = rec.get("source_rows")
+    result["check1_adapt"] = {
+        "source_rows": src_rows, "records": rec["records"], "adapt_rejects": adapt_rej,
+        "covered": covered,
+        "ok": (covered == src_rows) if src_rows is not None else None,
+        "note": None if src_rows is not None else "adapter 未声明 SOURCE_ROWS",
+    }
 
     ab = pq.read_table(d / "ab_entity.parquet").to_pylist()
     ag = pq.read_table(d / "ag_entity.parquet").to_pylist()

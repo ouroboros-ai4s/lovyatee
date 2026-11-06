@@ -12,6 +12,7 @@ from etl.core.lineage import join, kv, locator
 SRC = "SRC_R77"
 DATA = Path("/data_new/ywy/dataset-abag/SRC_R77_AKBAR_SABDAB_KD/zenodo-13120765")
 FILE = "antibody_affinity_protein_sabdab.csv"
+SOURCE_ROWS = 493
 PLACEHOLDERS = ("NA", "N/A", "None", "nan", "NULL", "\\", "")
 
 

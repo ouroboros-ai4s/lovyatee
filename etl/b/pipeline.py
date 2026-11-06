@@ -81,12 +81,12 @@ def ag_key(rec: Record) -> str:
 
 
 def core_commit() -> str:
-    try:
-        return subprocess.check_output(
-            ["git", "rev-parse", "HEAD", "--", "etl/core"], text=True,
-            cwd=Path(__file__).resolve().parents[2]).strip()[:12]
-    except (subprocess.CalledProcessError, OSError):
-        return "unknown"
+    """etl/core 的内容 hash。用文件内容而不是 git commit：未提交的模块改动同样要让缓存失效。"""
+    h = hashlib.sha256()
+    for f in sorted((Path(__file__).resolve().parent.parent / "core").glob("*.py")):
+        h.update(f.name.encode())
+        h.update(f.read_bytes())
+    return h.hexdigest()[:16]
 
 
 def decision_hash(paths: Sequence[Path]) -> str:
@@ -198,7 +198,7 @@ def _stage_entities(out: Path, stage: str, src: str, dec: str, raw: list[dict],
 def run(src: str, records: Sequence[Record], reject_rows: Sequence[dict],
         resolve_ab: Callable[[dict], dict], resolve_ag: Callable[[dict], dict],
         out_root: Path | str = DEFAULT_OUT, workers: int = 32,
-        decisions: Sequence[Path] = ()) -> dict:
+        decisions: Sequence[Path] = (), source_rows: int | None = None) -> dict:
     """跑一个 SRC 的 adapt → ab → ag → assemble，返回对账摘要。
 
     resolver 接收 raw 行（含 `_ctx`），返回业务字段；AB_ID / AG_ID 由 resolver 用
@@ -262,6 +262,7 @@ def run(src: str, records: Sequence[Record], reject_rows: Sequence[dict],
 
     summary = {
         "src": src,
+        "source_rows": source_rows,
         "records": len(records),
         "adapt_rejects": len(reject_rows),
         "ab_keys": len(ab_ent),

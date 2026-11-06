@@ -40,7 +40,8 @@ def _hints(spec):
         return None
     spans = spec.get("spans")
     return Hints(linker=spec.get("linker"),
-                 spans=tuple(tuple(s) for s in spans) if spans else None)
+                 spans=tuple(tuple(s) for s in spans) if spans else None,
+                 single_chain=bool(spec.get("single_chain")))
 
 
 def _parents(ctx):

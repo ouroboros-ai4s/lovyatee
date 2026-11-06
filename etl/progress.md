@@ -62,3 +62,48 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 - R76 + R77 merge（`/data_new/ywy/etl_out/R76_R77_check`）：`n_pairs=984, n_3a=475, n_obs=984`，`sum len(affinity)=984`。共有 `3A_ID` 的 `affinity[]` 同时含两个 SRC 的 tuple，各自保留定位（例：`SRC_R76 | protein_sabdab.csv | row=331 | ID1=5c0s | col=Y` 与 `SRC_R77 | antibody_affinity_protein_sabdab.csv | row=331 | Antibody_ID=5c0s | col=Y`）。
 - `affinity` 长度分布：460 条 2、14 条 4、1 条 8，与 R76 内重复结构跨源叠加一致。
 - 集合差异：0 条。
+
+### R08 AVIDa-hTNFa — 完成
+
+- 数据：`AVIDa-hTNFa.csv` 5,580 行 + `corpus-hTNFa.csv` 216,225 行无标签语料 + `antigen_sequences.csv` 1 行。与 inventory 一致。
+- 决策文件 `etl/decisions/R08.yaml`：3 条 claim，`verify_decisions` 通过。抗原序列 = 233 aa TNF-alpha 前体，来自 `antigen_sequences.csv`；1TNF 只作靶点代表结构。
+- 各阶段：adapt 5,580 records / 216,225 rejects（语料整表无 label，按 aff 方案第 1 项类 1 不成立，逐行进 reject）→ ab 5,577 键（5,576 ok，1 `no_domain`）→ ag 1 键 → assemble 5,579 pair。
+- 单源 merge：`n_pairs=5,579, n_3a=5,571, sum len(affinity)=5,579`，断言全过。
+- `no_domain` 占比 0（1/5,577），与 `vdomain.md` 的实测值一致。
+- 过半码复查：`no_observation` 97.5% 全部来自语料表，该表确实无 label，条件成立，接受。
+- 裁剪：5,579 条中 5,562 条 `c_tag=His6`、全部有 `n_len=22` 信号肽裁剪，与 inventory 的 22 aa + 6×His 描述一致。
+- 抽查：3 条 `raw_ab` 与源单元格逐字一致；抽样的 `3A` 沿 lineage 回溯到行、`col=label`。
+
+### R74 AbDesign 2.0 — 完成
+
+- 数据：`pd_1/affinity.csv` 578 行（576 条有名 + 2 条 assay 对照），与 inventory 一致。
+- 决策文件 `etl/decisions/R74.yaml`：3 条 claim，通过自查。抗原 = 5GGS entity 3 chain Y（123 aa PD-1），`structref` 取 entity 序列核对。
+- 各阶段：adapt 566 records / 12 rejects（2 条对照无序列 `no_sequence`，10 行 kd 与 binding 均空 `no_observation`）→ ab 566 键全 ok → ag 1 键。
+- observation 拆分：`kd` 388 条 + `binding` 178 条 = 566；`kd` 有值的行不再产出 `binding`，kon/koff/r2 不产出。inventory 记 388 / 566 是各自原始值行数，差 10 行两列皆空。
+- 单源 merge：`n_pairs=566, n_3a=566, sum len(affinity)=566`，断言全过。
+- 突变名（`5GGS__A_B_Z__A_T_28_M`）只进 lineage 的 `name=`。
+
+### R03 AbDesign 1.0 — 完成
+
+- 数据：`datasets_mut.csv` 1,303 行 + `datasets_wt.csv` 57 行，与 inventory 一致。
+- 各阶段：adapt 1,303 records / 57 rejects（WT 参照表无 label，按 aff 方案第 1 项不成立）→ ab 1,226 键全 ok → ag 47 键（47 个 parent PDB，与 inventory 一致）→ assemble 1,303 pair。
+- `affinity_type` 分布：`elisa_mut_to_wt_ratio` 658 + `ddg` 645 = 1,303，与 inventory 的 658 / 645 完全一致，且写进 observation lineage。
+- 单源 merge：`n_pairs=1,303, n_3a=1,142`，断言全过；`pair - 3A = 161` 是同序列对不同抗原重复三元组合并。
+- 抽查：`affinity_type=` 出现在 lineage 中，`method=` 与 `pdb_name=` 定位齐备。
+
+### R80 ANTIPASTI — 完成
+
+- 数据：`sabdab_summary_all.tsv` 1,266 行、`mendeley-data` 715 个 PDB（inventory 记 2,268 个文件，实际目录里 715 个且覆盖全部 715 个不同 PDB，不构成口径差异）。
+- 与 inventory 的一处出入：`antigen_chain` 可以是多链（`E | G`），inventory 未提。按链序全部入库，链序参与 `AG_ID`。
+- 各阶段：adapt 1,053 records / 213 rejects（209 `non_protein`：`antigen_type` 非 protein/peptide；4 `unresolved`：4KV5 的 I/K/L/F 链在 PDB 中不存在）→ ab 1,053 键（1,048 ok，3 `no_domain` + 2 `unresolved`）→ ag 1,041 键。
+- **共享模块修改一处**：`vdomain.Hints` 新增 `single_chain`。来源已声明该行是单链构建体时，两域之间的整段残余即 linker，不再要求识别连接序列。R80 的 `scfv=True` 行因此从 47 条 `unresolved` 降到 2 条。理由：来源已给出构建体几何，要求 ANARCI 认出非标准 linker 属于额外约束；这一改动不涉及任何 SRC 分支，`Hints` 是通用输入。
+- 排除占比：`non_protein` 16.5%、`unresolved` 0.47%、`no_domain` 0.24%。均未过半。
+- `delta_g` 不产出，只有 `affinity`。
+- 单源 merge：`n_pairs=1,048, n_3a=827`，断言全过。
+
+### 第一批收尾 merge
+
+`/data_new/ywy/etl_out/merge_all`（该 glob 覆盖 `SRC_R*/`，此刻即第一、二批已完成的部分）：
+`n_pairs=9,480, n_3a=8,501, n_obs=9,480`，`Σ len(affinity)=9,480`，断言全过。
+`overlap`：R08 5,571、R03 1,140、R80 749、R74 566、R76+R77 397、R76+R77+R80 76、R03+R76+R77+R80 2 —— 跨源同一 `3A` 的 SRC 集合并集正常。
+`coverage`：R80 `vh_null=9`、`vl_null=154`（VL-only 与 VHH 行），其余 SRC 无空槽。

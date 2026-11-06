@@ -31,7 +31,8 @@ def main(argv=None) -> int:
     decisions = sorted(Path("etl/decisions").glob(f"*{args.src.upper()}*.yaml"))
     summary = pipeline.run(name, records, rejects, entities.ab_entity, entities.ag_entity,
                           out_root=Path(args.out), workers=args.workers,
-                          decisions=decisions)
+                          decisions=decisions,
+                          source_rows=getattr(adapter, "SOURCE_ROWS", None))
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
 

@@ -1,0 +1,41 @@
+{
+  "src": "SRC_R08",
+  "note": "JSON 是 YAML 1.2 的子集；保留 .yaml 扩展名以符合 plan 的路径约定，运行期只 json.loads，不引入 PyYAML。 信号肽与 6xHis 无来源文档可引，改由 vdomain 的 trim 按残余与 TAGS 处理，不写进决策文件。",
+  "claims": [
+    {
+      "id": "C1",
+      "statement": "本 SRC 的唯一抗原实体是 TNFa-WT-beads，其序列即 antigen_sequences.csv 的 Ag_sequence 列（233 aa 人 TNF-alpha 前体）。",
+      "applies_to": {
+        "file": "AVIDa-hTNFa/antigen_sequences.csv",
+        "col": "Ag_sequence"
+      },
+      "evidence": {
+        "file": "AVIDa-hTNFa/antigen_sequences.csv",
+        "quote": "TNFa-WT-beads,MSTESMIRDVELAEEALPKKTGGPQGSRRCLFLSLFSFLIVAGATTLFCLLHFGVIGPQREEFPRDLSLISPLAQAVRSSSRTPSDKPVAHVVANPQAEGQLQWLNRRANALLANGVELRDNQLVVPSEGLYLIYSQVLFKGQGCPSTHVLLTHTISRIAVSYQTKVNLLSAIKSPCQRETPEGAEAKPWYEPIYLGGVFQLEKGDRLSAEINRPDYLDFAESGQVYFGIIAL"
+      },
+      "value": "MSTESMIRDVELAEEALPKKTGGPQGSRRCLFLSLFSFLIVAGATTLFCLLHFGVIGPQREEFPRDLSLISPLAQAVRSSSRTPSDKPVAHVVANPQAEGQLQWLNRRANALLANGVELRDNQLVVPSEGLYLIYSQVLFKGQGCPSTHVLLTHTISRIAVSYQTKVNLLSAIKSPCQRETPEGAEAKPWYEPIYLGGVFQLEKGDRLSAEINRPDYLDFAESGQVYFGIIAL"
+    },
+    {
+      "id": "C2",
+      "statement": "AVIDa-hTNFa.csv 的每一行都作用于 C1 的抗原实体，因此抗原侧不需要逐行序列。",
+      "applies_to": {
+        "file": "AVIDa-hTNFa/AVIDa-hTNFa.csv",
+        "col": "Ag_label",
+        "value": "TNFa-WT-beads"
+      },
+      "evidence": {
+        "file": "AVIDa-hTNFa/AVIDa-hTNFa.csv",
+        "quote": "TNFa-WT-beads"
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "1TNF 只是靶点代表结构，不是任何一条 VHH-antigen 复合物结构；抗原序列以来源 CSV 为准，结构只记录不一致。",
+      "applies_to": {},
+      "evidence": {
+        "file": "README.md",
+        "quote": "公开 CSV 没有逐 VHH PDB ID，也没有 AVIDa-hTNFa VHH—TNFα 实验复合物。PDB 子任务采用 RCSB `1TNF` 作为人 TNFα 靶点代表结构"
+      }
+    }
+  ]
+}

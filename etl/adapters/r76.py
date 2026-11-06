@@ -15,6 +15,7 @@ from etl.core.lineage import join, kv, locator
 SRC = "SRC_R76"
 DATA = Path("/data_new/ywy/dataset-abag/SRC_R76_TDC_ANTIBODYAFF/dataverse-v105")
 FILE = "protein_sabdab.csv"
+SOURCE_ROWS = 493
 PLACEHOLDERS = ("NA", "N/A", "None", "nan", "NULL", "\\", "")
 
 
