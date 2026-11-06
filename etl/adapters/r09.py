@@ -30,7 +30,8 @@ HEAVY_COLS = ("heavy", "hc", "vh", "ab_heavy_chain_seq", "heavy_sequence",
               "heavy chain", "hchain", "vh_sequence")
 LIGHT_COLS = ("light", "lc", "vl", "ab_light_chain_seq", "light_sequence",
               "light chain", "lchain", "vl_sequence")
-AG_SEQ_COLS = ("ag_seq", "antigen_sequence", "antigen seq", "ag_sequence")
+AG_SEQ_COLS = ("ag_seq", "antigen_seq", "antigen_sequence", "antigen seq",
+               "ag_sequence", "target_seq", "target_sequence")
 # 读数列：名字里带这些词的列各成一条 observation
 LABEL_HINTS = ("kd", "ic50", "ec50", "affinity", "pred_affinity", "mean",
                "neg_log", "label", "fitness")
@@ -94,6 +95,13 @@ def adapt():
     return _stream(), adapt.rejects
 
 
+# 可核验的固定靶：li2023 与 R23 同批测量（决策文件 R09 C2）
+FIXED_ANTIGEN = {
+    "li2023machine_scFv-SARS-CoV-2_affinity1.csv": "PDVDLGDISGINAS",
+    "li2023machine_scFv-SARS-CoV-2_affinity2.csv": "PDVDLGDISGINAS",
+}
+
+
 def _stream():
     for name in _tables():
         try:
@@ -121,14 +129,17 @@ def _stream():
                 h = (row.get(h_col) or "").strip() if h_col else ""
                 l = (row.get(l_col) or "").strip() if l_col else ""
                 ag = (row.get(ag_col) or "").strip() if ag_col else ""
+                if not ag:
+                    ag = FIXED_ANTIGEN.get(name, "")
                 if not h and not l:
                     adapt.rejects.append(reject("adapt", "no_sequence", SRC, key,
                                                 {"table": name}))
                     continue
                 if not ag or not ag.isalpha():
-                    adapt.rejects.append(reject("adapt", "no_antigen_sequence",
-                                                SRC, key,
-                                                {"table": name, "ag": ag[:40]}))
+                    # 决策文件 R09 C3：无来源序列的固定靶表按 no_antigen_binding 排除
+                    adapt.rejects.append(reject("adapt", "no_antigen_binding", SRC, key,
+                                                {"table": name, "ag": ag[:40],
+                                                 "decision": "R09:C3"}))
                     continue
                 loc = locator(SRC, name, "row=" + str(n))
                 obs = []

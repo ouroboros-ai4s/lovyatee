@@ -246,3 +246,12 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 10. `entities._parents` 支持 `ctx` 只给结构引用（`ref` + `chains`），不在每个 record 里复制编号表。
 11. `entities.ab_entity` / `ag_entity` 增加两槽皆空时的 `no_sequence` 兜底（原先会抛 `ValueError: vh and vl both empty`）。
 12. `verify_decisions` 支持 `value_from_file`，用于跨 SRC 取值（R79 的抗原取自 R78）。
+
+### R09 FLAb — 进行中（第三次重跑）
+
+- 数据：`data/binding/` 80 张 CSV + 6 个 zip，tar 后合计约 463 万行。
+- **判断两处，已记录：**
+  1. 只有 AbRank（`ag_seq`）与 kothiwal 系列（`antigen_seq`）带逐行抗原序列；其余表没有。li2023 两张表与 SRC_R23 同批测量（`MIT_Target`），复用 R23 决策文件里的 14 aa 肽 `PDVDLGDISGINAS`；`AlphaNeg1~3` 是负对照，同 R23 处理。
+  2. engelhart2022、tsuruta2024 两表、phillips2021、adams2017、cognano 等固定靶表没有任何可核验的抗原序列来源，按 `no_antigen_binding` 排除（决策文件 R09 C3）。这与 plan 的 "固定目标需要决策文件" 一致：没有可核验证据的就不编。
+- 决策文件 `etl/decisions/R09.yaml`：3 条 claim，通过自查。
+- 第一次跑把 `ag_seq` 只认成一个列名，491 万行被误判 `no_antigen_sequence`；第二次扩展到 `antigen_seq` 等列名后仍缺固定靶，第三次加上 `FIXED_ANTIGEN` 与 `no_antigen_binding` 分支。
