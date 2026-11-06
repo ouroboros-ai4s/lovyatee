@@ -1,0 +1,27 @@
+def _stage_entities(out, stage, src, dec, raw, key_col, ev_col, resolve, schema,
+                    id_field, workers) -> dict:
+    keys = sorted({row[key_col] for row in raw})
+    evidence = {row[key_col]: row[ev_col] for row in raw}
+    stamp = out / (stage + "_entity.parquet.key")
+    target = out / (stage + "_entity.parquet")
+    key = stage_key(src, stage, dec, keys)
+    if _key_hit(stamp, key, [target]):
+        return {row[key_col]: row for row in pq.read_table(target).to_pylist()}
+
+    resolved = _resolve_batch(resolve, [evidence[k] for k in keys], workers)
+    fixed = []
+    for k, ent in zip(keys, resolved):
+        row = {name: None for name in schema.names}
+        row[key_col] = k
+        if ent.get("reason_code"):
+            row["reason_code"] = ent["reason_code"]
+        else:
+            for name in schema.names:
+                if ent.get(name) is not None:
+                    row[name] = ent[name]
+        row["lineage"] = list(ent.get("lineage") or [])
+        row["applied_edits"] = list(ent.get("applied_edits") or [])
+        fixed.append(row)
+    _write(target, fixed, schema)
+    stamp.write_text(key + "\n")
+    return {row[key_col]: row for row in fixed}
