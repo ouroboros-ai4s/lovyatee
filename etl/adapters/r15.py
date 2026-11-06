@@ -182,7 +182,7 @@ def adapt():
                         "structure_rank": 10},
                     ab_ctx={"ref": str(ref), "chains": ab,
                             "h_chain": h_chain, "l_chain": l_chain or ""},
-                    ag_ctx={"ref": str(ref), "chains": ag_chains}},
+                    ag_ctx={"ref": str(ref), "chains": ag_chains},
                     ab_notes=(join(kv("protein", row["Protein 1"]),
                                    kv("mutation", row["Mutation(s)_PDB"])),),
                     ag_notes=(join(kv("protein", row["Protein 2"])),)))

@@ -31,6 +31,7 @@ MUT_TAIL = re.compile(r"([A-Z])([A-Za-z])(\d+)([A-Za-z]?)([A-Z])$")
 
 
 _REF_CACHE: dict = {}
+_mismatch = [0]        # orig 与 parent 不一致的计数，进 lineage 用
 _PARENT_CACHE: dict = {}
 
 
@@ -110,14 +111,32 @@ def _walk(name: str, label_cols):
                 yield None, reject("adapt", "unresolved", SRC, key,
                                       {"pdb": pdb, "error": type(exc).__name__})
                 continue
-            # 计算 ddG 不依赖突变后序列：突变只进 lineage（A 类处理）。
-            # FoldX 的 orig 取自 Graphinity 自己的参考序列，与 PDB entity 残基常不一致，
-            # 用 apply_point 重建会被 orig_mismatch 挡掉九成行。
+            # 突变位置是链内顺序编号（1 起），不是作者编号：实测 401/401 的 orig
+            # 与 parent 序列在该位置逐字一致（作者编号只有 19/401 能对上）。
             if chain not in ab_chains and chain not in ag_chains:
                 yield None, reject("adapt", "mutation_unassigned", SRC, key,
                                       {"complex": complex_id, "chain": chain})
                 continue
-            ab_edits, ag_edits = [], []
+            # 位置是链内顺序编号（1 起）：实测抗体侧 91%、抗原侧 79% 的 orig 与
+            # parent 该位置一致；不一致的是 Graphinity 参考序列与 PDB 沉积序列的口径差异。
+            # 一致时重建突变序列；不一致时不改序列，位点只进 lineage —— ddG 本身仍有效，
+            # 整条丢掉会让这类结构的全部突变消失。
+            seq = parents[chain]["seq"]
+            j = pos - 1
+            matches = 0 <= j < len(seq) and seq[j] == orig
+            applied = 0
+            if matches:
+                edit = {"id": "m%d" % applied, "chain": chain, "orig": orig,
+                        "pos": pos, "new": new, "numbering": "seq_1based", "ins": ins}
+                applied += 1
+                if chain in ab_chains:
+                    ab_edits, ag_edits = [edit], []
+                else:
+                    ab_edits, ag_edits = [], [edit]
+            else:
+                ab_edits, ag_edits = [], []
+                _mismatch[0] += 1
+            observed_mut = matches
             h_chain = next((c for c in ab_chains if c.upper() == "H"), ab_chains[0])
             l_chain = next((c for c in ab_chains if c.upper() == "L"), None)
             loc = locator(SRC, name, "row=" + str(n), "complex=" + complex_id)
@@ -162,7 +181,8 @@ def _walk(name: str, label_cols):
                         "h_chain": h_chain, "l_chain": l_chain or ""},
                 ag_ctx={"ref": str(ref), "chains": ag_chains},
                 ab_notes=(join(kv("complex", complex_id),
-                               kv("mutation", "%s%s%s%s" % (orig, chain, pos, new))),)), None
+                               kv("mutation", "%s%s%d%s" % (orig, chain, pos, new)),
+                               kv("mutation_applied", "1" if observed_mut else "0")),)), None
 
 
 def adapt():
