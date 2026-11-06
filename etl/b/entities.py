@@ -66,14 +66,18 @@ def ab_entity(row: dict) -> dict:
 
     edits_done = []
     if ev.get("edits"):
+        # 插入码在结构记录里是大写（PPDB 约定），源表常写小写
         edits = [Edit(e["id"], e["chain"], e["orig"], int(e["pos"]), e["new"],
-                      e["numbering"], e.get("ins", "")) for e in ev["edits"]]
+                      e["numbering"], (e.get("ins") or "").upper())
+                 for e in ev["edits"]]
         res = apply_point(ev.get("entity", "ab"), _parents(ctx), edits)
         lineage += list(res.lineage)
         if res.reason:
             return {"reason_code": res.reason, "lineage": lineage}
-        h_seq, h_lin, _ = clean(res.chains.get("H") or res.chains.get("h"), ph)
-        l_seq, l_lin, _ = clean(res.chains.get("L") or res.chains.get("l"), ph)
+        h_name = ctx.get("h_chain") or "H"
+        l_name = ctx.get("l_chain") or "L"
+        h_seq, h_lin, _ = clean((res.chains or {}).get(h_name), ph)
+        l_seq, l_lin, _ = clean((res.chains or {}).get(l_name) if l_name else None, ph)
         lineage += list(h_lin) + list(l_lin)
         edits_done = [e["id"] for e in ev["edits"]]
 
@@ -90,8 +94,24 @@ def ab_entity(row: dict) -> dict:
 
 def ag_entity(row: dict) -> dict:
     ev = json.loads(row["evidence"])
+    ctx = row.get("_ctx") or {}
     ph = tuple(ev.get("placeholders") or DEFAULT_PLACEHOLDERS)
     lineage, chains = [], []
+    edits_done = []
+
+    if ev.get("edits"):
+        edits = [Edit(e["id"], e["chain"], e["orig"], int(e["pos"]), e["new"],
+                      e["numbering"], (e.get("ins") or "").upper())
+                 for e in ev["edits"]]
+        res = apply_point("ag", _parents(ctx), edits)
+        lineage += list(res.lineage)
+        if res.reason:
+            return {"reason_code": res.reason, "lineage": lineage}
+        ev = dict(ev)
+        ev["chains"] = [dict(c, seq=(res.chains or {}).get(c["key"], c["seq"]))
+                        for c in ev.get("chains") or []]
+        edits_done = [e["id"] for e in ev["edits"]]
+
     for spec in ev.get("chains") or []:
         seq, lin, flags = clean(spec.get("seq"), ph)
         lineage += list(lin)
@@ -111,4 +131,4 @@ def ag_entity(row: dict) -> dict:
     return {"AG_ID": ids.ag_id(list(b.chains)), "sequence": list(b.chains),
             "structure": ev.get("structure"),
             "structure_rank": ev.get("structure_rank"),
-            "lineage": lineage, "applied_edits": []}
+            "lineage": lineage, "applied_edits": edits_done}

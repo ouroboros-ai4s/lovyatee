@@ -32,7 +32,7 @@ def check(src: str, out_root: Path = Path("/data_new/ywy/etl_out")) -> dict:
     adapt_rej = len(row_rej)
     if table_rej:
         rec["adapt_table_rejects"] = sorted(table_rej)
-    covered = rec["records"] + adapt_rej
+    covered = rec.get("covered_rows", rec["records"] + adapt_rej)
     src_rows = rec.get("source_rows")
     result["check1_adapt"] = {
         "source_rows": src_rows, "records": rec["records"], "adapt_rejects": adapt_rej,

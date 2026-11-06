@@ -150,3 +150,32 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 1. `vdomain.Hints` 新增 `single_chain`（R80 引入），附 `test_vdomain.py` 覆盖。
 2. `check.py` 的 adapt 对账区分行级与表级 reject；`run_src.py` 传递 adapter 声明的 `SOURCE_ROWS`。
 3. 依赖：新增 `openpyxl==3.1.5`（R13 / R16 的 xlsx）。
+
+### R14 AB-Bind — 完成
+
+- 数据：`AB-Bind_experimental_data.csv` 1,101 行（含表头）、32 个随包 PDB。编码是 latin-1（表内含非 UTF-8 字节）。
+- 决策文件 `etl/decisions/R14.yaml`：4 条 claim，通过自查。
+- 抗体/抗原侧判定：主判据是 ANARCI 能否认出免疫球蛋白域；`Partners(A_B)` 是链组写法（`A_HL` 展开为 A、H、L），链名只作兜底。
+- 突变解析：`链:原残基位置新残基`，作者编号；插入码在结构里是大写、源表写小写，resolver 统一转大写。
+- 各阶段：adapt 683 records / 418 rejects（310 `no_antigen_binding`、108 `unresolved`）→ ab 397 键全 ok → ag 284 键（283 ok，1 拒）→ assemble 682 pair。
+- 排除构成：`no_antigen_binding` 310 = 1T83 的 246（Fc-only）+ 3WJJ 的 25（Fc-only）+ 1DVF 的 39（两侧皆 Fv，无独立抗原）；`unresolved` 108 = 6 个无抗体链的普通蛋白复合物（1AK4、1JTG、1KTZ、HM_1KTZ、1FFW、3K2M）。与 inventory 的分类逐项对上。
+- 过半码复查：`no_antigen_binding` 28.2%，未过半，且构成已逐项说明。
+- 单源 merge：`n_pairs=682, n_3a=680, sum len(affinity)=682`，断言全过。
+- **Review Focus 第 4 条已验**：同一个 `AB_ID` 下的三条记录（1BJ1 row=19/20/21）编辑不同，`ag_key` 分别为 `640ba445` / `81fa5066` / `15395b63`，`3A_ID` 分成 19 个，未共用键。
+
+### R15 SKEMPI 2.0 — 完成
+
+- 数据：`skempi_v2.csv`（分号分隔、latin-1）7,085 行、348 个复合物键。随包结构在 `pdb/structures/`（初版误指 `pdb/`，348 个都走了 RCSB 下载，已修）。
+- 突变格式：`<原残基><链><位置><插入码><新残基>`，例如 `LI45G` 是链 I 第 45 位 L→G。**这与我最初按 AB-Bind 顺序解析相反，已修正并在 adapter 注释里写明。**
+- 每行产两条 record：`mut`（应用突变、`Affinity_mut`）与 `wt`（不改序列、`Affinity_wt`），符合 aff 方案第 2 项。
+- `n.b` / `n.b.` 按 aff 方案第 1 项视为成立的定性 observation（原字符串进 label）；`unf`、空值不成立。
+- 各阶段：adapt 2,422 records / 5,874 rejects（全部 `no_antigen_binding`）→ ab 712 键（685 ok，27 拒）→ ag 479 键全 ok → assemble 2,370 pair。
+- 单源 merge：`n_pairs=2,370, n_3a=937, sum len(affinity)=2,370`，断言全过。
+- **与 plan 的数字有出入，已判明：** plan 期望 `Affinity_mut` 2,273 / `Affinity_wt` 2,289 条 observation。本快照实测：抗体相关复合物 1,211 源行（与源自带 `Hold_out_type=AB/AG` 的 1,211 行完全吻合），产 2,422 条 record、2,370 条成立 observation（52 条被 `orig_mismatch` / `unmapped_position` 拒）。1,211 行的口径与 inventory 的"942 行 / 48 复合物"也不同，inventory 自身的 942 与源字段 AB/AG 的 1,211 就对不上。以源字段和实测为准，plan 的 2,273/2,289 视作其他快照或另一种折叠方式下的数字。
+- 过半码复查：`no_antigen_binding` 82.9%（5,874 / 7,085）。SKEMPI 2.0 是通用 PPI 突变库，抗体–抗原只是其中子集（inventory 明记"其余 316 个 accession 为普通蛋白-蛋白复合物…不在本表"）。条件成立，接受。
+
+### 共享模块与驱动的后续改动
+
+4. `pipeline.Record` 新增 `row_key`，`reconcile.json` 新增 `covered_rows`：一行产多条 record 的 SRC（R15 的 mut/wt）按源行对账，不再重复计数。
+5. `pipeline.core_commit()` 改为对 `etl/core/*.py` 加 `etl/b/*.py` 取内容 hash。原先只看 `etl/core`，改 resolver 不会让缓存失效，R14 曾因此跑出旧结果。
+6. `entities.ab_entity` / `ag_entity` 的主题编号按 `ab_ctx` 的 `h_chain` / `l_chain` 取，不再假定链名就是 `H` / `L`（SKEMPI 与 AB-Bind 的链名多样）。

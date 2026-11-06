@@ -66,6 +66,7 @@ class Record:
     branch: str = "main"
     ab_ctx: dict = field(default_factory=dict)     # 体积大的辅助数据，不进键
     ag_ctx: dict = field(default_factory=dict)
+    row_key: str = ""          # 源行键；一行产多条 record 时（R15 的 mut/wt）用于对账
 
 
 def _h(*parts) -> str:
@@ -81,11 +82,16 @@ def ag_key(rec: Record) -> str:
 
 
 def core_commit() -> str:
-    """etl/core 的内容 hash。用文件内容而不是 git commit：未提交的模块改动同样要让缓存失效。"""
+    """清洗代码的内容 hash：`etl/core/*.py` 加本模块 `etl/b/*.py`。
+
+    用文件内容而不是 git commit —— 未提交的改动同样要让缓存失效；resolver
+    （entities.py）与驱动本身也算清洗代码。"""
+    root = Path(__file__).resolve().parent.parent
     h = hashlib.sha256()
-    for f in sorted((Path(__file__).resolve().parent.parent / "core").glob("*.py")):
-        h.update(f.name.encode())
-        h.update(f.read_bytes())
+    for pattern in ("core/*.py", "b/*.py"):
+        for f in sorted(root.glob(pattern)):
+            h.update(f.name.encode())
+            h.update(f.read_bytes())
     return h.hexdigest()[:16]
 
 
@@ -230,6 +236,12 @@ def run(src: str, records: Sequence[Record], reject_rows: Sequence[dict],
                              AG_ENTITY_SCHEMA, workers,
                              {ag_key(r): r.ag_ctx for r in records})
 
+    # 源行级对账：一行可产多条 record（R15 的 mut/wt），reject 也按源行计
+    def _row_of(key: str) -> str:
+        return key.rsplit(":", 1)[0] if key.rsplit(":", 1)[-1] in ("mut", "wt") else key
+
+    covered_rows = len({_row_of(x["key"]) for x in reject_rows} |
+                       {(r.row_key or r.key) for r in records})
     pair_rows, asm_rejects = [], []
     for r in records:
         ak, gk = ab_key(r), ag_key(r)
@@ -263,6 +275,7 @@ def run(src: str, records: Sequence[Record], reject_rows: Sequence[dict],
     summary = {
         "src": src,
         "source_rows": source_rows,
+        "covered_rows": covered_rows,
         "records": len(records),
         "adapt_rejects": len(reject_rows),
         "ab_keys": len(ab_ent),
