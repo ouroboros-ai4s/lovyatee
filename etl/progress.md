@@ -278,3 +278,15 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 3. **一行多个读数**：R10 三个读数列、R12 的 `affinity_type` 长表、R74 的 `kd`/`binding`、R75 的 `class`/`label`、R79 的 `alphaseq_affinity`/`predicted_affinity` 均按 aff 方案第 2 项各成一条 observation，条数已在各小节列出。
 4. **evidence 不漏影响清洗的字段**：R14 的同一个 `AB_ID` 下三条记录（1BJ1 row=19/20/21）编辑不同，`ag_key` 分别为 `640ba445` / `81fa5066` / `15395b63`，`3A_ID` 分成 19 个，未共用键。
 5. **断线重跑**：R11 首次跑约 10 分钟；代码不变时重跑 30 秒（只重新 adapt），`pair.parquet` 的 sha256 完全相同。另一次改动 `etl/b/*.py` 后重跑，`.key` 未命中并重算，符合"代码变了必须重跑"的设计。
+
+### R09 FLAb — 完成（第六次运行）
+
+- 数据：86 张表（80 张 CSV + 6 张 zip 内 CSV），合计 4,627,533 行。
+- **三次数据发现，已记录：**
+  1. 只有 AbRank（`ag_seq`）与 kothiwal 系列（`antigen_seq`）带逐行抗原序列；li2023 两张表与 SRC_R23 同批测量，复用 R23 决策文件的 14 aa 肽。
+  2. `fitness` 列不是亲和力读数，按 aff 方案第 2 项不产出（初版误当成 label，导致每行多一次 resolver 调用，已修）。
+  3. 86 张表里 80 张直接是 CSV、6 张在 zip 内。表枚举与读取路径需同时覆盖两处；初版分别造成"每张表处理两次"与"80 张表读不到"。
+- 各阶段：adapt 500,877 records / 1,453,401 rejects → ab 90,867 键（90,865 ok）→ ag 2,600 键 → assemble 500,875 pair。
+- observation 501,165 条。
+- 排除构成：`no_antigen_binding` 544,698（无来源序列的固定靶表，决策文件 C3）、`no_observation` 908,622（行内无可解析读数）。
+- 单源 merge 断言通过。

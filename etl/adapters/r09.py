@@ -35,7 +35,8 @@ AG_SEQ_COLS = ("ag_seq", "antigen_seq", "antigen_sequence", "antigen seq",
 # 读数列：名字里带这些词的列各成一条 observation
 LABEL_HINTS = ("kd", "ic50", "ec50", "affinity", "pred_affinity", "mean",
                "neg_log", "label", "fitness")
-SKIP_HINTS = ("count", "ngs", "replicate", "round", "edit_distance", "margin")
+SKIP_HINTS = ("count", "ngs", "replicate", "round", "edit_distance", "margin",
+              "fitness", "quality", "pass")
 
 
 def _col(header, names):
@@ -72,10 +73,10 @@ def _valid(value) -> bool:
 
 
 def _table(name: str):
-    """返回 (表名, 文本流)。已解压的优先，否则从 zip 里读，避免解包到根分区。"""
-    local = EXTRACTED / name
-    if local.exists():
-        return local.open(encoding="utf-8", errors="replace")
+    """返回文本流。顺序：本地解压副本 -> 包内 CSV -> zip 内 CSV。"""
+    for cand in (EXTRACTED / name, FLAB / name):
+        if cand.exists():
+            return cand.open(encoding="utf-8", errors="replace")
     zipped = FLAB / (name + ".zip")
     if zipped.exists():
         with zipfile.ZipFile(zipped) as z:
@@ -86,9 +87,11 @@ def _table(name: str):
 
 
 def _tables():
-    names = sorted(p.name for p in EXTRACTED.glob("*.csv"))
-    names += sorted(p.name.removesuffix(".zip") for p in FLAB.glob("*.zip"))
-    return names
+    """解压过的优先，zip 里未解压的补上；同名只留一份，否则每张表被处理两次。"""
+    # 80 张已在包内解压为 csv；6 张 zip 我另解到 EXTRACTED，两者都算，同名只留一份
+    names = {p.name for p in FLAB.glob("*.csv")}
+    names |= {p.name.removesuffix(".zip") for p in FLAB.glob("*.zip")}
+    return sorted(names)
 
 
 def adapt():
