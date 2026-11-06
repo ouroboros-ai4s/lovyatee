@@ -290,3 +290,11 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 - observation 501,165 条。
 - 排除构成：`no_antigen_binding` 544,698（无来源序列的固定靶表，决策文件 C3）、`no_observation` 908,622（行内无可解析读数）。
 - 单源 merge 断言通过。
+
+### R09 最终口径（第八版）
+
+- 86 张表，实测可解析数据行 4,606,788。inventory 记 4,627,533，差 20,745 是其口径含被跳过的表头与 DISCLAIMER 行，不是数据丢失。
+- 各阶段：adapt 896,948 records / 3,709,840 rejects → ab 157,893 键（157,891 ok）→ ag 2,610 键 → assemble 896,946 pair。
+- observation 898,936 条。
+- 排除构成：`no_observation` 2,417,179（行内无可解析读数）、`no_antigen_binding` 1,292,661（无来源序列的固定靶表，决策文件 C3）。
+- 累计修掉 8 个数据问题：列名识别 3 处（`ag_seq` / `VHH_sequence` / `ANT Binding`）、表枚举重复、读取路径、`fitness` 处置、DISCLAIMER 行识别、`SOURCE_ROWS` 口径。

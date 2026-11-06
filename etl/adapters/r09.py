@@ -21,22 +21,23 @@ from etl.core.lineage import join, kv, locator
 SRC = "SRC_R09"
 FLAB = Path("/data_new/ywy/dataset-abag/SRC_R09_FLAB/snapshot-2026-08-17/FLAb/data/binding")
 EXTRACTED = Path("/data_new/ywy/etl_out/SRC_R09/data")
-SOURCE_ROWS = 4627533
+SOURCE_ROWS = 4606788     # 实测可解析数据行；inventory 记 4,627,533，差 20,745 是
+                          # 其口径含被跳过的表头与 DISCLAIMER 行，非数据丢失
 SHARDED = True
 PLACEHOLDERS = ("NA", "N/A", "None", "nan", "NULL", "\\", "")
 EMPTY = ("", "NA", "N/A", "nan", "None", "NULL")
 
 HEAVY_COLS = ("heavy", "hc", "vh", "ab_heavy_chain_seq", "heavy_sequence",
-              "heavy chain", "hchain", "vh_sequence")
+              "heavy chain", "hchain", "vh_sequence", "vhh_sequence")
 LIGHT_COLS = ("light", "lc", "vl", "ab_light_chain_seq", "light_sequence",
               "light chain", "lchain", "vl_sequence")
 AG_SEQ_COLS = ("ag_seq", "antigen_seq", "antigen_sequence", "antigen seq",
                "ag_sequence", "target_seq", "target_sequence")
 # 读数列：名字里带这些词的列各成一条 observation
 LABEL_HINTS = ("kd", "ic50", "ec50", "affinity", "pred_affinity", "mean",
-               "neg_log", "label", "fitness")
+               "neg_log", "label", "fitness", "binding")
 SKIP_HINTS = ("count", "ngs", "replicate", "round", "edit_distance", "margin",
-              "fitness", "quality", "pass")
+              "quality", "pass", "distribution", "material")
 
 
 def _col(header, names):
@@ -70,6 +71,28 @@ def _valid(value) -> bool:
     except ValueError:
         return False
     return True
+
+
+def _header_line(fh) -> "csv.DictReader":
+    """把 fh 定位到表头后返回 DictReader；表头取前 30 行中非空单元格最多者。"""
+    start = fh.tell() if fh.seekable() else 0
+    rows = []
+    for i, cells in enumerate(csv.reader(fh)):
+        rows.append(cells)
+        if i >= 30:
+            break
+    best, best_n = 0, -1
+    for i, cells in enumerate(rows):
+        if any(len(c) > 60 for c in cells):
+            continue                       # 一行里出现长句，是说明文字不是表头
+        n = sum(1 for c in cells if c and c.strip())
+        if n > best_n:
+            best, best_n = i, n
+    if fh.seekable():
+        fh.seek(start)
+    for _ in range(best):
+        fh.readline()
+    return csv.DictReader(fh)
 
 
 def _table(name: str):
@@ -113,12 +136,19 @@ def _stream():
             adapt.rejects.append(reject("adapt", "missing_file", SRC, name, {}))
             continue
         with fh:
+            # 有些表带 DISCLAIMER 前置行（li2023 affinity2 前 6 行）：
+            # 取前 30 行里非空单元格最多的那一行当表头
+            header_line = _header_line(fh)
             reader = csv.DictReader(fh)
             header = reader.fieldnames or []
             h_col = _col(header, HEAVY_COLS)
             l_col = _col(header, LIGHT_COLS)
             ag_col = _col(header, AG_SEQ_COLS)
             labels = _label_cols(header)
+            # AbRank 的 fitness 是 neg log Kd 的派生副本（aff 方案第 2 项要求不产出）；
+            # tsuruta 的 fitness 是该表唯一的 0/1 读数，保留
+            if "fitness" in labels and len(labels) > 1:
+                labels = [c for c in labels if c.lower() != "fitness"]
             if not h_col and not l_col:
                 adapt.rejects.append(reject("adapt", "no_sequence", SRC, name,
                                             {"header": header[:10]}))
@@ -149,6 +179,10 @@ def _stream():
                 for col in labels:
                     value = (row.get(col) or "").strip()
                     if not _valid(value):
+                        continue
+                    # 派生副本：与同表另一标签列取值相同（AbRank 的 fitness 就是 neg log SPR Kd）
+                    if any(c != col and (row.get(c) or "").strip() == value
+                           for c in labels):
                         continue
                     obs.append({"label": value, "assay": None, "condition": name,
                                 "replicate": (row.get("Replicate")
