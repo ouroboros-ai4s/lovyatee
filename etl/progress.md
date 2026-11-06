@@ -270,3 +270,11 @@ etl/adapters/<src>.py   SRC 专属 adapt() -> (records, rejects)
 `/data_new/ywy/etl_out/batch2_check`（17 个 SRC，R09 未完成时）：
 `n_pairs=2,245,133, n_3a=1,101,432, n_obs=2,917,248`，断言全过。
 `qa_sample` 80 条，4 个层（direct / mutation_rebuild / split / trim）各抽 2 条核对：`3A_ID`、VH/VL 长度、抗原链数、obs 数与 lineage 的 `SRC_Rxx + 文件 + row=` 均对得上。
+
+### Review Focus 核验结果
+
+1. **过半排除码**：各 SRC 的 `check5_reasons` 已逐个记入上面的小节；过半的只有 R08 的 `no_observation`（97.5%，整张语料表无 label）、R15 的 `no_antigen_binding`（82.9%，SKEMPI 是通用 PPI 库）、R23 的 `no_antigen_binding`（75%，三个负对照没有抗原序列）、R10 的 `no_antigen_sequence`（56.3%，RBD-escape 的 `Ag_seq` 是突变标记串）。四处都复查过条件，结论是条件成立。
+2. **adapter 不改值**：R76（X1 两元素）、R03（`heavy_sequence`）、R10（制表符表的 `Ab_heavy_chain_seq`）各抽 3 条，`raw_ab` 与源单元格逐字相同，9/9 通过。
+3. **一行多个读数**：R10 三个读数列、R12 的 `affinity_type` 长表、R74 的 `kd`/`binding`、R75 的 `class`/`label`、R79 的 `alphaseq_affinity`/`predicted_affinity` 均按 aff 方案第 2 项各成一条 observation，条数已在各小节列出。
+4. **evidence 不漏影响清洗的字段**：R14 的同一个 `AB_ID` 下三条记录（1BJ1 row=19/20/21）编辑不同，`ag_key` 分别为 `640ba445` / `81fa5066` / `15395b63`，`3A_ID` 分成 19 个，未共用键。
+5. **断线重跑**：R11 首次跑约 10 分钟；代码不变时重跑 30 秒（只重新 adapt），`pair.parquet` 的 sha256 完全相同。另一次改动 `etl/b/*.py` 后重跑，`.key` 未命中并重算，符合"代码变了必须重跑"的设计。
