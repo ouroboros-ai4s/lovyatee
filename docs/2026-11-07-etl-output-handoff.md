@@ -1,5 +1,7 @@
 # ETL B 层产物交接
 
+[[2026-11-05-etl-a-layer-dev-plan]] 和 [[2026-11-05-etl-b-layer-handoff-plan]] 的产物交接.
+
 ## 位置
 
 全部产物在远程主机 `ssh 3x5090`，仓库之外：
