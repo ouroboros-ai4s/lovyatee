@@ -73,19 +73,12 @@ null 来源：3 条无 ANARCI domain（三个 CDR 全 null）；其余为空 CDR
 | | `analysis/l1` | 132 M |
 | | `pm_hf` / `protein_mesh_hf` / `tmp` / `_rev_tmp` | 100 M |
 
-原始数据在 `G:/abag-datasets` 另有本地镜像。
-
-## HF bucket 现状（与本任务无直接关系，供参考）
-
-`hf://buckets/Pthahnix/dataset-abag` 现有 69 个 `SRC_` 目录，最高到 `SRC_R74_OMI32_BIOPHY_SEQ`（旧编号）。待迁移：6 个仅 ID 前移（R69–R74 → R68–R73）+ 7 个新增（R74_ABDESIGN2 … R80_ANTIPASTI）；另需为 R24 / R39 / R52 / R55 各建一个占位 `README.md`。
-
-宿主访问 HF 需代理 `http://127.0.0.1:17890`，`hf` 在 `/data_new/ywy/envs/etl/bin/hf`，`HF_TOKEN` 由环境变量传入（不落盘）。
-
 ## 环境
 
 - 所有工作在主机 `3x5090` 的 `/data_new/ywy` 下进行，经 `ssh 3x5090`
 - 长任务用远端 `nohup` + log
 - 本地机器无 VPN，不可访问外网
+- 宿主访问 HF 需代理 `http://127.0.0.1:17890`，`hf` 在 `/data_new/ywy/envs/etl/bin/hf`，`HF_TOKEN` 由环境变量传入（不落盘）。
 
 ## Suggested skills
 
